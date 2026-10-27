@@ -65,6 +65,7 @@ def auth_config() -> dict[str, bool]:
     return {
         "oidc_configured": settings.oidc_configured,
         "scheduling_enabled": settings.scheduling_enabled,
+        "demo_auth_enabled": settings.demo_auth_enabled,
     }
 
 
@@ -285,7 +286,9 @@ def list_provider_credentials_for_review(
             & (TenantMembership.user_id == ProviderCredential.provider_user_id)
             & (TenantMembership.role == "provider"),
         )
-        .outerjoin(ProviderProfile, ProviderProfile.user_id == ProviderCredential.provider_user_id)
+        .outerjoin(
+            ProviderProfile, ProviderProfile.user_id == ProviderCredential.provider_user_id
+        )
         .where(
             ProviderCredential.tenant_id == tenant_id,
             ProviderCredential.status == status,
@@ -382,6 +385,11 @@ def review_provider_credential(
         credential.reviewed_by_user_id = reviewer.id
         credential.reviewed_at = datetime.now(UTC)
         credential.review_source = body.review_source
+        if body.decision == "verified":
+            # A verified credential completes onboarding; suspended profiles stay suspended.
+            profile = session.get(ProviderProfile, provider_user_id)
+            if profile is not None and profile.profile_status in {"draft", "pending"}:
+                profile.profile_status = "active"
         session.flush()
         append_audit_event(
             session,

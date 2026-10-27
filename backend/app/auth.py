@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hmac
+import re
 from typing import Any
 
 import jwt
@@ -62,16 +64,39 @@ def decode_access_token(token: str) -> dict[str, Any]:
     return claims
 
 
+DEMO_ISSUER = "https://demo.healthomatix.invalid"
+_DEMO_SUBJECT = re.compile(r"^demo-[a-z0-9-]{1,48}$")
+
+
+def demo_identity(request: Request) -> tuple[str, str] | None:
+    """Synthetic test identity asserted by the web server holding DEMO_AUTH_SECRET."""
+    if not settings.demo_auth_enabled:
+        return None
+    subject = request.headers.get("x-demo-user", "")
+    secret = request.headers.get("x-demo-secret", "")
+    if not subject and not secret:
+        return None
+    if not hmac.compare_digest(secret.encode(), settings.demo_auth_secret.encode()):
+        raise ApiError("AUTH_INVALID_TOKEN", "The demo session could not be verified.", 401)
+    if not _DEMO_SUBJECT.fullmatch(subject):
+        raise ApiError("AUTH_INVALID_TOKEN", "The demo user is not valid.", 401)
+    return DEMO_ISSUER, subject
+
+
 def get_current_user(
     request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     session: Session = Depends(get_session),
 ) -> User:
-    if credentials is None or credentials.scheme.lower() != "bearer":
-        raise ApiError("AUTH_REQUIRED", "Sign in to continue.", 401)
-    claims = decode_access_token(credentials.credentials)
-    issuer = str(claims["iss"])
-    subject = str(claims["sub"])
+    if credentials is not None and credentials.scheme.lower() == "bearer":
+        claims = decode_access_token(credentials.credentials)
+        issuer = str(claims["iss"])
+        subject = str(claims["sub"])
+    else:
+        demo = demo_identity(request)
+        if demo is None:
+            raise ApiError("AUTH_REQUIRED", "Sign in to continue.", 401)
+        issuer, subject = demo
     user = session.execute(
         select(User).where(User.issuer == issuer, User.subject == subject)
     ).scalar_one_or_none()

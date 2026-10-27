@@ -21,6 +21,17 @@ const PORTAL_ROLES: Record<PortalKind, string[]> = {
 
 export type Features = { oidcConfigured: boolean; schedulingEnabled: boolean };
 
+export type DemoInfo = { enabled: boolean; passcodeRequired: boolean; user: string | null };
+
+type SessionStatus = {
+  sign_in_configured: boolean;
+  authenticated: boolean;
+  expired: boolean;
+  demo_enabled?: boolean;
+  demo_passcode_required?: boolean;
+  demo_user?: string | null;
+};
+
 export type PortalState =
   | { status: "loading" }
   | { status: "signed-out"; signInConfigured: boolean; expired: boolean }
@@ -31,6 +42,7 @@ type PortalContextValue = {
   kind: PortalKind;
   state: PortalState;
   features: Features | null;
+  demo: DemoInfo;
   memberships: Membership[];
   active: Membership | null;
   selectTenant: (tenantId: string) => void;
@@ -54,6 +66,7 @@ function readStoredTenant(kind: PortalKind): string | null {
 export function PortalProvider({ kind, children }: { kind: PortalKind; children: ReactNode }) {
   const [state, setState] = useState<PortalState>({ status: "loading" });
   const [features, setFeatures] = useState<Features | null>(null);
+  const [demo, setDemo] = useState<DemoInfo>({ enabled: false, passcodeRequired: false, user: null });
   const [selectedTenant, setSelectedTenant] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
 
@@ -80,7 +93,7 @@ export function PortalProvider({ kind, children }: { kind: PortalKind; children:
   useEffect(() => {
     let active = true;
     (async () => {
-      let session: { sign_in_configured: boolean; authenticated: boolean; expired: boolean };
+      let session: SessionStatus;
       try {
         const response = await fetch("/api/session", { cache: "no-store" });
         session = await response.json();
@@ -99,6 +112,13 @@ export function PortalProvider({ kind, children }: { kind: PortalKind; children:
           });
         }
         return;
+      }
+      if (active) {
+        setDemo({
+          enabled: Boolean(session.demo_enabled),
+          passcodeRequired: Boolean(session.demo_passcode_required),
+          user: session.demo_user ?? null,
+        });
       }
       if (!session.authenticated) {
         if (active) {
@@ -151,8 +171,8 @@ export function PortalProvider({ kind, children }: { kind: PortalKind; children:
   const refresh = useCallback(() => setVersion((value) => value + 1), []);
 
   const value = useMemo(
-    () => ({ kind, state, features, memberships, active, selectTenant, refresh }),
-    [kind, state, features, memberships, active, selectTenant, refresh],
+    () => ({ kind, state, features, demo, memberships, active, selectTenant, refresh }),
+    [kind, state, features, demo, memberships, active, selectTenant, refresh],
   );
 
   return <PortalContext.Provider value={value}>{children}</PortalContext.Provider>;

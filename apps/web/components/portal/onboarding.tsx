@@ -5,7 +5,8 @@ import { useMemo, useState, type FormEvent } from "react";
 import { api, call, type ApiProblem } from "@/lib/api";
 import { browserTimeZone } from "@/lib/time";
 import { FormError, Notice, SelectField, SubmitButton, TextField, useToast } from "@/components/ui";
-import { ROLE_LABELS, usePortal, type PortalKind } from "./portal-context";
+import { DEMO_PERSONAS } from "@/lib/demo-personas";
+import { ROLE_LABELS, usePortal, type DemoInfo, type PortalKind } from "./portal-context";
 
 const AUTH_ERRORS: Record<string, string> = {
   sign_in_unavailable: "Sign-in isn't configured for this environment yet.",
@@ -14,6 +15,9 @@ const AUTH_ERRORS: Record<string, string> = {
   sign_in_expired: "That sign-in attempt expired. Please start again.",
   sign_in_failed: "Sign-in couldn't be completed. Please try again.",
   session_too_large: "Your identity provider returned a session that is too large for this browser. Contact support.",
+  demo_unavailable: "Demo mode isn't turned on for this environment.",
+  demo_failed: "That demo account isn't available. Choose another.",
+  demo_passcode: "That demo passcode isn't right. Check it and try again.",
 };
 
 export function SignInPanel({
@@ -22,18 +26,22 @@ export function SignInPanel({
   expired,
   authError,
   returnTo,
+  demo,
 }: {
   kind: PortalKind;
   configured: boolean;
   expired: boolean;
   authError: string | null;
   returnTo: string;
+  demo: DemoInfo;
 }) {
   const audience = kind === "clinic" ? "clinic workspace" : "patient space";
   return (
     <div className="sign-in-panel">
       <p className="eyebrow">{kind === "clinic" ? "CLINIC WORKSPACE" : "PATIENT SPACE"}</p>
-      <h1>{expired ? "Your session has ended" : `Sign in to your ${audience}`}</h1>
+      <h1>
+        {expired ? "Your session has ended" : demo.enabled && !configured ? "Choose a demo account" : `Sign in to your ${audience}`}
+      </h1>
       <p className="lead">
         {kind === "clinic"
           ? "Manage your clinic, team, providers, and schedule in one secure place."
@@ -45,13 +53,15 @@ export function SignInPanel({
           <p>{AUTH_ERRORS[authError] ?? AUTH_ERRORS.sign_in_failed}</p>
         </div>
       )}
-      {configured ? (
+      {configured && (
         <div className="portal-actions">
           <a className="button" href={`/auth/login?returnTo=${encodeURIComponent(returnTo)}`}>
             {expired ? "Sign in again" : "Sign in"}
           </a>
         </div>
-      ) : (
+      )}
+      {demo.enabled && <DemoSignIn kind={kind} returnTo={returnTo} passcodeRequired={demo.passcodeRequired} />}
+      {!configured && !demo.enabled && (
         <>
           <Notice title="Sign-in isn't available in this environment" tone="warning">
             Secure sign-in has not been set up for this deployment, so no account information can be shown.
@@ -67,12 +77,57 @@ export function SignInPanel({
           </details>
         </>
       )}
-      <ul className="trust-list">
-        <li>Your sign-in is handled by your organization&apos;s identity provider.</li>
-        <li>Access tokens stay on the server and are never stored in this browser.</li>
-        <li>Each clinic&apos;s records stay separate.</li>
-      </ul>
+      {!demo.enabled && (
+        <ul className="trust-list">
+          <li>Your sign-in is handled by your organization&apos;s identity provider.</li>
+          <li>Access tokens stay on the server and are never stored in this browser.</li>
+          <li>Each clinic&apos;s records stay separate.</li>
+        </ul>
+      )}
     </div>
+  );
+}
+
+function DemoSignIn({
+  kind,
+  returnTo,
+  passcodeRequired,
+}: {
+  kind: PortalKind;
+  returnTo: string;
+  passcodeRequired: boolean;
+}) {
+  // Show this portal's roles first.
+  const personas = [...DEMO_PERSONAS].sort((a, b) => Number(b.portal === kind) - Number(a.portal === kind));
+  return (
+    <form className="demo-sign-in" method="post" action="/auth/demo">
+      <Notice title="Demo mode — synthetic data only" tone="warning">
+        These shared test accounts skip real sign-in. Never enter real patient information.
+      </Notice>
+      <input type="hidden" name="returnTo" value={returnTo} />
+      {passcodeRequired && (
+        <TextField label="Demo passcode" name="passcode" type="password" required autoComplete="off" />
+      )}
+      <div className="persona-grid">
+        {personas.map((persona) => (
+          <button className="persona-card" type="submit" name="persona" value={persona.id} key={persona.id}>
+            <span className="persona-portal">{persona.portal === "clinic" ? "Clinic workspace" : "Patient space"}</span>
+            <strong>{persona.label}</strong>
+            <span>{persona.hint}</span>
+          </button>
+        ))}
+      </div>
+      <details className="system-details">
+        <summary>How to test the full flow</summary>
+        <ol className="system-details-copy demo-steps">
+          <li>Sign in as <strong>Clinic admin</strong> and create a clinic.</li>
+          <li>On <strong>Team</strong>, create invitation codes for a provider and a patient.</li>
+          <li>Switch to <strong>Provider</strong> from the demo bar, join with the code, then complete the profile and add a credential.</li>
+          <li>Switch back to <strong>Clinic admin</strong> and verify the credential under <strong>Providers</strong>.</li>
+          <li>As <strong>Provider</strong>, add availability. As <strong>Patient</strong>, join and book. (Scheduling must be enabled on the API.)</li>
+        </ol>
+      </details>
+    </form>
   );
 }
 

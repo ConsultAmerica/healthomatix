@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { demoSettings } from "@/lib/server/demo";
 import { oidcSettings } from "@/lib/server/oidc";
 import { clearSession, resolveSession, writeSession } from "@/lib/server/session";
 
@@ -7,12 +8,16 @@ export const dynamic = "force-dynamic";
 /** Reports sign-in state to the browser without ever exposing tokens. */
 export async function GET(request: NextRequest) {
   const signInConfigured = oidcSettings() !== null;
+  const demo = demoSettings();
   const resolved = await resolveSession(request);
   const response = NextResponse.json(
     {
       sign_in_configured: signInConfigured,
       authenticated: resolved.status === "active",
       expired: resolved.status === "expired",
+      demo_enabled: demo !== null,
+      demo_passcode_required: Boolean(demo?.passcode),
+      demo_user: resolved.status === "active" ? (resolved.session.demoUser ?? null) : null,
     },
     { headers: { "Cache-Control": "no-store" } },
   );

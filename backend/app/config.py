@@ -36,6 +36,18 @@ def _database_url() -> str:
     return value
 
 
+def _demo_auth_secret(environment: str) -> str:
+    # Demo sign-in is for synthetic testing only and must never reach production.
+    secret = os.getenv("DEMO_AUTH_SECRET", "").strip()
+    if not secret:
+        return ""
+    if environment == "production":
+        raise ValueError("DEMO_AUTH_SECRET must not be set when HEALTHOMATIX_ENV=production.")
+    if len(secret) < 32:
+        raise ValueError("DEMO_AUTH_SECRET must be at least 32 characters.")
+    return secret
+
+
 @dataclass(frozen=True)
 class Settings:
     database_url: str
@@ -46,6 +58,11 @@ class Settings:
     oidc_jwks_url: str
     cors_origins: tuple[str, ...]
     platform_admin_identities: tuple[tuple[str, str], ...]
+    demo_auth_secret: str = ""
+
+    @property
+    def demo_auth_enabled(self) -> bool:
+        return bool(self.demo_auth_secret)
 
     @property
     def oidc_configured(self) -> bool:
@@ -53,12 +70,13 @@ class Settings:
 
 
 def load_settings() -> Settings:
+    environment = os.getenv("HEALTHOMATIX_ENV", "development").strip().lower()
     scheduling_value = os.getenv("SCHEDULING_ENABLED", "false").strip().lower()
     if scheduling_value not in {"true", "false", "1", "0", "yes", "no"}:
         raise ValueError("SCHEDULING_ENABLED must be a boolean value.")
     return Settings(
         database_url=_database_url(),
-        environment=os.getenv("HEALTHOMATIX_ENV", "development").strip().lower(),
+        environment=environment,
         scheduling_enabled=scheduling_value in {"true", "1", "yes"},
         oidc_issuer=os.getenv("OIDC_ISSUER", "").strip().rstrip("/"),
         oidc_audience=os.getenv("OIDC_AUDIENCE", "").strip(),
@@ -72,6 +90,7 @@ def load_settings() -> Settings:
         platform_admin_identities=_platform_admin_identities(
             os.getenv("PLATFORM_ADMIN_IDENTITIES", "")
         ),
+        demo_auth_secret=_demo_auth_secret(environment),
     )
 
 

@@ -94,7 +94,13 @@ The repository deploys as two Vercel projects in the same team:
 | Web | `apps/web` | Next.js. Set `HEALTHOMATIX_API_URL` to the API project's URL, plus `APP_BASE_URL`, `SESSION_SECRET`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, and `OIDC_AUDIENCE`. |
 
 Set `OIDC_ISSUER`, `OIDC_AUDIENCE`, and `OIDC_JWKS_URL` on the API project as
-well. Until an identity provider is configured, both portals show a
+well.
+
+**Testing without an identity provider:** set the same `DEMO_AUTH_SECRET`
+(32+ characters) on both projects and `DEMO_PASSCODE` on the web project. The
+portals then offer demo accounts (clinic admin, staff, provider, two patients)
+and a demo bar for switching between them. The API refuses demo mode when
+`HEALTHOMATIX_ENV=production`. Use synthetic data only. Until an identity provider is configured, both portals show a
 sign-in-unavailable state. Keep `SCHEDULING_ENABLED=false` outside approved
 synthetic demonstrations.
 

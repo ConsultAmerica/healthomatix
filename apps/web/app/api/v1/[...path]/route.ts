@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { demoSettings } from "@/lib/server/demo";
 import { clearSession, isSameOrigin, resolveSession, writeSession } from "@/lib/server/session";
 
 export const dynamic = "force-dynamic";
@@ -60,7 +61,13 @@ async function proxy(request: NextRequest, context: ProxyContext) {
     headers.set("Content-Type", contentType);
   }
   if (resolved.status === "active") {
-    headers.set("Authorization", `Bearer ${resolved.session.accessToken}`);
+    const demo = resolved.session.demoUser ? demoSettings() : null;
+    if (demo) {
+      headers.set("X-Demo-User", `demo-${resolved.session.demoUser}`);
+      headers.set("X-Demo-Secret", demo.secret);
+    } else {
+      headers.set("Authorization", `Bearer ${resolved.session.accessToken}`);
+    }
   }
 
   const target = `${base}/api/v1/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`;

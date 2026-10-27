@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { discover, oidcSettings } from "@/lib/server/oidc";
-import { appUrl, clearSession, isSameOrigin } from "@/lib/server/session";
+import { appUrl, clearSession, isSameOrigin, readSession, safeReturnTo } from "@/lib/server/session";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,11 @@ export async function POST(request: NextRequest) {
 
   let destination = appUrl(request, "/").toString();
   const settings = oidcSettings();
-  if (settings) {
+  if (readSession(request)?.demoUser) {
+    // Demo users go back to the demo sign-in screen of the portal they were in.
+    const form = await request.formData().catch(() => null);
+    destination = appUrl(request, safeReturnTo(String(form?.get("returnTo") ?? ""))).toString();
+  } else if (settings) {
     try {
       const { end_session_endpoint } = await discover(settings);
       if (end_session_endpoint?.startsWith("https://")) {

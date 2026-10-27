@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { BrandMark } from "@/app/brand-mark";
 import { LoadingState, ProblemState, ToastProvider } from "@/components/ui";
+import { DEMO_PERSONAS, findPersona } from "@/lib/demo-personas";
 import { NoMembership, SignInPanel } from "./onboarding";
 import { PortalProvider, ROLE_LABELS, usePortal, type PortalKind, type Role } from "./portal-context";
 
@@ -41,7 +42,7 @@ function isCurrent(pathname: string, href: string, root: string) {
 
 function ShellFrame({ config, children }: { config: PortalConfig; children: ReactNode }) {
   const pathname = usePathname();
-  const { state, memberships, active, selectTenant, refresh } = usePortal();
+  const { state, demo, memberships, active, selectTenant, refresh } = usePortal();
   const [authError, setAuthError] = useState<string | null>(null);
   const root = `/${config.kind}`;
   const role = active?.role as Role | undefined;
@@ -71,6 +72,7 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
         expired={state.expired}
         authError={authError}
         returnTo={pathname}
+        demo={demo}
       />
     );
   } else if (state.status === "error") {
@@ -108,6 +110,7 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
           {role && <span className="role-pill">{ROLE_LABELS[role]?.toUpperCase() ?? role}</span>}
           {ready ? (
             <form method="post" action="/auth/logout">
+              <input type="hidden" name="returnTo" value={pathname} />
               <button className="topbar-home topbar-button" type="submit">
                 Sign out
               </button>
@@ -119,6 +122,7 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
           )}
         </div>
       </header>
+      {ready && demo.user && <DemoBar current={demo.user} pathname={pathname} />}
       <div className="portal-layout">
         <nav className="side-nav" aria-label={`${config.heading} navigation`}>
           <p className="nav-heading">{config.heading}</p>
@@ -162,6 +166,32 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
           {content}
         </main>
       </div>
+    </div>
+  );
+}
+
+function DemoBar({ current, pathname }: { current: string; pathname: string }) {
+  const persona = findPersona(current);
+  return (
+    <div className="demo-bar" role="region" aria-label="Demo mode">
+      <p>
+        <strong>Demo mode</strong> · Signed in as {persona?.label ?? current}. Synthetic data only — never enter real
+        patient information.
+      </p>
+      <form className="demo-switch" method="post" action="/auth/demo">
+        <input type="hidden" name="returnTo" value={pathname} />
+        <label>
+          <span className="visually-hidden">Switch demo user</span>
+          <select name="persona" defaultValue={current}>
+            {DEMO_PERSONAS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit">Switch user</button>
+      </form>
     </div>
   );
 }

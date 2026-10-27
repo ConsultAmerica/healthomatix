@@ -23,7 +23,17 @@
   matching `Origin` and the `x-healthomatix-csrf` header. The proxy does not
   forward `/api/v1/platform/*`. This flow has not yet been verified against a
   production identity provider. Do not store tokens in browser local storage
-  or add a development authentication bypass.
+  or add an authentication bypass outside demo mode.
+- Demo mode is the only exception, for synthetic testing. When
+  `DEMO_AUTH_SECRET` is set on both the API and the web app, the web app
+  offers fixed demo accounts (`demo-admin`, `demo-staff`, `demo-provider`,
+  `demo-patient`, `demo-patient-2`) under the issuer
+  `https://demo.healthomatix.invalid`. The web server proves each demo identity
+  to the API with the shared secret; the API compares it in constant time and
+  refuses to start with a demo secret when `HEALTHOMATIX_ENV=production`.
+  Demo accounts still go through normal tenant, role, and patient-link checks.
+  Set `DEMO_PASSCODE` on any internet-reachable deployment, keep demo data
+  synthetic, and remove both values before real use.
 - Platform administration is separate from tenant roles. It is enabled only
   for exact HTTPS issuer/subject pairs supplied in
   `PLATFORM_ADMIN_IDENTITIES`; a tenant role never grants platform access.

@@ -2,6 +2,7 @@ import "server-only";
 
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import type { NextRequest, NextResponse } from "next/server";
+import { demoSettings } from "./demo";
 import { oidcSettings, refreshTokens, type TokenSet } from "./oidc";
 
 export const SESSION_COOKIE = "hx_session";
@@ -17,7 +18,19 @@ export type BrowserSession = {
   refreshToken?: string;
   expiresAt: number;
   createdAt: number;
+  /** Set for demo-mode sessions; no identity-provider token exists. */
+  demoUser?: string;
 };
+
+export function demoSession(personaId: string): BrowserSession {
+  const now = Date.now();
+  return {
+    accessToken: "",
+    expiresAt: now + SESSION_MAX_AGE_SECONDS * 1000,
+    createdAt: now,
+    demoUser: personaId,
+  };
+}
 
 export type LoginState = {
   state: string;
@@ -132,6 +145,12 @@ export async function resolveSession(request: NextRequest): Promise<ActiveSessio
   const session = readSession(request);
   if (!session) {
     return { status: "none" };
+  }
+  if (session.demoUser) {
+    // Demo sessions stop working as soon as demo mode is switched off.
+    return demoSettings() && session.expiresAt > Date.now()
+      ? { status: "active", session, refreshed: false }
+      : { status: "none" };
   }
   if (session.expiresAt - Date.now() > REFRESH_SKEW_MS) {
     return { status: "active", session, refreshed: false };

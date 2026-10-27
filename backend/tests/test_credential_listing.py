@@ -16,7 +16,7 @@ from app.models import ProviderProfile, Tenant, TenantMembership, User
 
 @pytest.fixture
 def credential_client() -> Generator[
-    tuple[TestClient, list[User], User, User, Tenant, Tenant], None, None
+    tuple[TestClient, list[User], User, User, Tenant, Tenant, Session], None, None
 ]:
     engine = create_engine(
         "sqlite://",
@@ -55,7 +55,7 @@ def credential_client() -> Generator[
     app.dependency_overrides[get_current_user] = lambda: actor[0]
     try:
         with TestClient(app) as client:
-            yield client, actor, admin, provider, clinic_a, clinic_b
+            yield client, actor, admin, provider, clinic_a, clinic_b, session
     finally:
         app.dependency_overrides.clear()
         session.close()
@@ -77,9 +77,9 @@ def _submit(client: TestClient, tenant_id: str) -> str:
 
 
 def test_provider_lists_own_credentials(
-    credential_client: tuple[TestClient, list[User], User, User, Tenant, Tenant],
+    credential_client: tuple[TestClient, list[User], User, User, Tenant, Tenant, Session],
 ) -> None:
-    client, _, _, _, clinic_a, _ = credential_client
+    client, _, _, _, clinic_a, _, _ = credential_client
     credential_id = _submit(client, clinic_a.id)
 
     listed = client.get(f"/api/v1/tenants/{clinic_a.id}/providers/me/credentials")
@@ -91,9 +91,9 @@ def test_provider_lists_own_credentials(
 
 
 def test_admin_review_queue_is_tenant_scoped_and_reflects_decisions(
-    credential_client: tuple[TestClient, list[User], User, User, Tenant, Tenant],
+    credential_client: tuple[TestClient, list[User], User, User, Tenant, Tenant, Session],
 ) -> None:
-    client, actor, admin, provider, clinic_a, clinic_b = credential_client
+    client, actor, admin, provider, clinic_a, clinic_b, _ = credential_client
     credential_id = _submit(client, clinic_a.id)
 
     forbidden = client.get(f"/api/v1/tenants/{clinic_a.id}/provider-credentials")
@@ -124,3 +124,48 @@ def test_admin_review_queue_is_tenant_scoped_and_reflects_decisions(
         f"/api/v1/tenants/{clinic_a.id}/provider-credentials", params={"status": "verified"}
     )
     assert [row["credential_id"] for row in verified.json()] == [credential_id]
+
+
+def test_verifying_credential_activates_pending_profile(
+    credential_client: tuple[TestClient, list[User], User, User, Tenant, Tenant, Session],
+) -> None:
+    client, actor, admin, provider, clinic_a, _, session = credential_client
+    profile = session.get(ProviderProfile, provider.id)
+    profile.profile_status = "pending"
+    session.commit()
+    rejected_id = _submit(client, clinic_a.id)
+    verified_id = _submit(client, clinic_a.id)
+
+    actor[0] = admin
+    base = f"/api/v1/tenants/{clinic_a.id}/providers/{provider.id}/credentials"
+    rejected = client.post(
+        f"{base}/{rejected_id}/review", json={"decision": "rejected", "review_source": "Lookup"}
+    )
+    assert rejected.status_code == 200, rejected.text
+    session.refresh(profile)
+    assert profile.profile_status == "pending"
+
+    verified = client.post(
+        f"{base}/{verified_id}/review", json={"decision": "verified", "review_source": "Lookup"}
+    )
+    assert verified.status_code == 200, verified.text
+    session.refresh(profile)
+    assert profile.profile_status == "active"
+
+
+def test_verification_does_not_reactivate_suspended_profile(
+    credential_client: tuple[TestClient, list[User], User, User, Tenant, Tenant, Session],
+) -> None:
+    client, actor, admin, provider, clinic_a, _, session = credential_client
+    profile = session.get(ProviderProfile, provider.id)
+    profile.profile_status = "suspended"
+    session.commit()
+    credential_id = _submit(client, clinic_a.id)
+
+    actor[0] = admin
+    client.post(
+        f"/api/v1/tenants/{clinic_a.id}/providers/{provider.id}/credentials/{credential_id}/review",
+        json={"decision": "verified", "review_source": "Lookup"},
+    )
+    session.refresh(profile)
+    assert profile.profile_status == "suspended"
