@@ -1,0 +1,19 @@
+{
+  "name": "healthomatix",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "web:dev": "npm --workspace @healthomatix/web run dev",
+    "web:build": "npm --workspace @healthomatix/web run build",
+    "web:lint": "npm --workspace @healthomatix/web run lint",
+    "mobile:typecheck": "npm --workspace @healthomatix/mobile run typecheck",
+    "api:generate": "npm --workspace @healthomatix/api-client run generate",
+    "api:check": "npm --workspace @healthomatix/api-client run check",
+    "backend:dev": "python -m uvicorn app.main:app --app-dir backend --reload",
+    "backend:migrate": "cd backend && python -m alembic upgrade head",
+    "backend:test": "cd backend && python -m pytest tests -q"
+  }
+}

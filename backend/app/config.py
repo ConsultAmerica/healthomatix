@@ -1,0 +1,66 @@
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+
+
+def _csv(value: str) -> tuple[str, ...]:
+    return tuple(item.strip() for item in value.split(",") if item.strip())
+
+
+def _platform_admin_identities(value: str) -> tuple[tuple[str, str], ...]:
+    identities: list[tuple[str, str]] = []
+    for entry in value.split(";"):
+        if not entry.strip():
+            continue
+        issuer, separator, subject = entry.partition("|")
+        issuer = issuer.strip().rstrip("/")
+        subject = subject.strip()
+        if not separator or not issuer.startswith("https://") or not subject:
+            raise ValueError(
+                "PLATFORM_ADMIN_IDENTITIES entries must be HTTPS issuer|subject pairs."
+            )
+        identities.append((issuer, subject))
+    return tuple(dict.fromkeys(identities))
+
+
+@dataclass(frozen=True)
+class Settings:
+    database_url: str
+    environment: str
+    scheduling_enabled: bool
+    oidc_issuer: str
+    oidc_audience: str
+    oidc_jwks_url: str
+    cors_origins: tuple[str, ...]
+    platform_admin_identities: tuple[tuple[str, str], ...]
+
+    @property
+    def oidc_configured(self) -> bool:
+        return bool(self.oidc_issuer and self.oidc_audience and self.oidc_jwks_url)
+
+
+def load_settings() -> Settings:
+    scheduling_value = os.getenv("SCHEDULING_ENABLED", "false").strip().lower()
+    if scheduling_value not in {"true", "false", "1", "0", "yes", "no"}:
+        raise ValueError("SCHEDULING_ENABLED must be a boolean value.")
+    return Settings(
+        database_url=os.getenv("DATABASE_URL", "sqlite:///./healthomatix-dev.db"),
+        environment=os.getenv("HEALTHOMATIX_ENV", "development").strip().lower(),
+        scheduling_enabled=scheduling_value in {"true", "1", "yes"},
+        oidc_issuer=os.getenv("OIDC_ISSUER", "").strip().rstrip("/"),
+        oidc_audience=os.getenv("OIDC_AUDIENCE", "").strip(),
+        oidc_jwks_url=os.getenv("OIDC_JWKS_URL", "").strip(),
+        cors_origins=_csv(
+            os.getenv(
+                "CORS_ORIGINS",
+                "http://localhost:3000,http://localhost:8081",
+            )
+        ),
+        platform_admin_identities=_platform_admin_identities(
+            os.getenv("PLATFORM_ADMIN_IDENTITIES", "")
+        ),
+    )
+
+
+settings = load_settings()

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 570" fill="none">
+  <ellipse cx="341" cy="495" rx="220" ry="25" fill="#DDF1EB" opacity=".6"/>
+  <circle cx="345" cy="282" r="220" fill="#EDF8F4"/>
+  <circle cx="513" cy="151" r="38" fill="#E8F1FF"/>
+  <path d="M499 151h28M513 137v28" stroke="#246BCE" stroke-linecap="round" stroke-width="4"/>
+  <path d="M153 406c0-67 54-121 121-121h132c67 0 121 54 121 121v51H153v-51Z" fill="#DDF1EB"/>
+
+  <g>
+    <rect x="169" y="144" width="304" height="258" rx="22" fill="#fff"/>
+    <rect x="169" y="144" width="304" height="61" rx="22" fill="#176B5B"/>
+    <path d="M169 184h304v21H169v-21Z" fill="#176B5B"/>
+    <text x="198" y="181" fill="#fff" font-family="Arial,sans-serif" font-size="19" font-weight="700">Appointment preview</text>
+    <rect x="197" y="226" width="70" height="70" rx="14" fill="#EDF8F4"/>
+    <text x="232" y="252" text-anchor="middle" fill="#687A75" font-family="Arial,sans-serif" font-size="12" font-weight="700">VISIT</text>
+    <path d="M220 274h24M220 282h24" stroke="#176B5B" stroke-linecap="round" stroke-width="3"/>
+    <text x="284" y="242" fill="#172321" font-family="Arial,sans-serif" font-size="15" font-weight="700">Clinic visit</text>
+    <text x="284" y="265" fill="#687A75" font-family="Arial,sans-serif" font-size="12">Secure clinic connection</text>
+    <rect x="284" y="276" width="79" height="22" rx="11" fill="#EAF7F0"/>
+    <circle cx="297" cy="287" r="3" fill="#277A52"/>
+    <text x="306" y="291" fill="#277A52" font-family="Arial,sans-serif" font-size="10" font-weight="700">PREVIEW</text>
+    <path d="M197 316h248" stroke="#DDE7E3"/>
+    <circle cx="216" cy="349" r="13" fill="#E8F1FF"/>
+    <path d="M216 342v8l5 3" stroke="#246BCE" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    <text x="241" y="346" fill="#172321" font-family="Arial,sans-serif" font-size="13" font-weight="700">Appointment details</text>
+    <text x="241" y="365" fill="#687A75" font-family="Arial,sans-serif" font-size="11">Available after secure sign-in</text>
+  </g>
+
+  <g>
+    <path d="M83 418c2-57 21-87 59-87s57 30 59 87v44H83v-44Z" fill="#246BCE"/>
+    <path d="M115 329h54l17 60h-87l16-60Z" fill="#fff"/>
+    <path d="M141 343v37" stroke="#DDE7E3" stroke-width="3"/>
+    <path d="M121 308c-16-5-24-19-24-39v-24c0-24 15-40 37-40h10c23 0 39 16 39 40v24c0 20-9 34-25 39h-37Z" fill="#C88F6F"/>
+    <path d="M91 250c-2-31 14-53 44-53 30 0 47 18 46 52-10-4-18-10-24-20-10 14-32 21-66 21Z" fill="#172321"/>
+    <path d="M117 258h1M151 258h1" stroke="#172321" stroke-linecap="round" stroke-width="4"/>
+    <path d="M125 274c7 5 13 5 20 0" stroke="#794B3D" stroke-linecap="round" stroke-width="3"/>
+    <path d="M108 432v32M176 432v32" stroke="#C88F6F" stroke-linecap="round" stroke-width="17"/>
+  </g>
+
+  <g>
+    <rect x="457" y="326" width="109" height="105" rx="18" fill="#fff"/>
+    <rect x="477" y="346" width="69" height="65" rx="12" fill="#E8F1FF"/>
+    <path d="M493 372h37M493 385h27" stroke="#246BCE" stroke-linecap="round" stroke-width="4"/>
+    <circle cx="531" cy="357" r="5" fill="#176B5B"/>
+  </g>
+</svg>
