@@ -1,12 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AppointmentItem } from "@/components/appointments";
 import { RoleGate } from "@/components/portal/portal-shell";
 import { useActiveMembership, usePortal } from "@/components/portal/portal-context";
 import { EmptyState, Notice, PageHeader, QueryView } from "@/components/ui";
 import { api, call, useApiQuery } from "@/lib/api";
-import { addDays, dayKey, formatDate, startOfWeek } from "@/lib/time";
+import { addDays, dayKey, formatDate, formatTime, shortId, startOfWeek } from "@/lib/time";
 
 export default function SchedulePage() {
   return (
@@ -80,37 +79,46 @@ function Schedule() {
                 );
               }
               return (
-                <div className="week-grid">
-                  {days.map((day) => {
-                    const key = dayKey(day);
-                    const items = appointments.filter((item) => dayKey(item.starts_at, item.timezone) === key);
-                    return (
-                      <section
-                        className={`week-day${key === today ? " is-today" : ""}`}
-                        key={key}
-                        aria-label={formatDate(day.toISOString())}
-                      >
-                        <h3 className="day-heading">
-                          {new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short" }).format(day)}
-                          {key === today && <span className="today-chip">Today</span>}
-                        </h3>
-                        {items.length ? (
-                          <ul className="appointment-list">
-                            {items.map((appointment) => (
-                              <AppointmentItem
-                                appointment={appointment}
-                                key={appointment.appointment_id}
-                                showPatient={!isProvider}
-                              />
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="day-empty">No appointments</p>
-                        )}
-                      </section>
-                    );
-                  })}
-                </div>
+                <>
+                  <p className="schedule-summary">
+                    {appointments.length} booked {appointments.length === 1 ? "appointment" : "appointments"} this week
+                  </p>
+                  <div className="week-calendar">
+                    {days.map((day) => {
+                      const key = dayKey(day);
+                      const items = appointments.filter((item) => dayKey(item.starts_at, item.timezone) === key);
+                      return (
+                        <section
+                          className={`calendar-day${key === today ? " is-today" : ""}${items.length ? "" : " is-empty"}`}
+                          key={key}
+                          aria-label={formatDate(day.toISOString())}
+                        >
+                          <h3 className="calendar-day-heading">
+                            <span>{new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(day)}</span>
+                            <strong>{day.getDate()}</strong>
+                          </h3>
+                          {items.length ? (
+                            <ul className="calendar-events">
+                              {items.map((appointment) => (
+                                <li className="calendar-event" key={appointment.appointment_id}>
+                                  <time dateTime={appointment.starts_at}>
+                                    {formatTime(appointment.starts_at, appointment.timezone)}–
+                                    {formatTime(appointment.ends_at, appointment.timezone)}
+                                  </time>
+                                  <strong>{appointment.provider_name || "Clinic provider"}</strong>
+                                  <span>{appointment.location_name}</span>
+                                  {!isProvider && <span className="mono">Patient {shortId(appointment.clinic_patient_id)}</span>}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="day-empty">No bookings</p>
+                          )}
+                        </section>
+                      );
+                    })}
+                  </div>
+                </>
               );
             }}
           </QueryView>

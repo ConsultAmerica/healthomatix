@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { BrandMark } from "@/app/brand-mark";
+import { Icon, type IconName } from "@/components/icons";
 import { LoadingState, ProblemState, ToastProvider } from "@/components/ui";
 import { DEMO_PERSONAS, findPersona } from "@/lib/demo-personas";
 import { NoMembership, SignInPanel } from "./onboarding";
@@ -12,6 +13,7 @@ import { PortalProvider, ROLE_LABELS, usePortal, type PortalKind, type Role } fr
 export type NavItem = {
   label: string;
   href: string;
+  icon?: IconName;
   roles?: Role[];
   /** Label override per role, for items whose meaning differs by role. */
   labelFor?: Partial<Record<Role, string>>;
@@ -85,7 +87,7 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
   }
 
   return (
-    <div className={`portal-shell ${config.kind}-shell app-shell`}>
+    <div className={`portal-shell ${config.kind}-shell app-shell${ready ? "" : " is-signed-out"}`}>
       <a className="skip-link" href="#app-main">
         Skip to content
       </a>
@@ -106,15 +108,23 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
               </select>
             </label>
           )}
-          {ready && memberships.length === 1 && active && <span className="tenant-name">{active.tenant_name}</span>}
-          {role && <span className="role-pill">{ROLE_LABELS[role]?.toUpperCase() ?? role}</span>}
           {ready ? (
-            <form method="post" action="/auth/logout">
-              <input type="hidden" name="returnTo" value={pathname} />
-              <button className="topbar-home topbar-button" type="submit">
-                Sign out
-              </button>
-            </form>
+            <div className="account-chip">
+              <span className="account-avatar" aria-hidden="true">
+                {initials(findPersona(demo.user)?.label ?? ROLE_LABELS[role ?? ""] ?? "You")}
+              </span>
+              <span className="account-text">
+                <strong>{findPersona(demo.user)?.label ?? ROLE_LABELS[role ?? ""] ?? "Signed in"}</strong>
+                {memberships.length <= 1 && <span>{active?.tenant_name ?? "No clinic yet"}</span>}
+              </span>
+              <form method="post" action="/auth/logout">
+                <input type="hidden" name="returnTo" value={pathname} />
+                <button className="icon-button account-signout" type="submit" title="Sign out">
+                  <Icon name="logout" />
+                  <span className="visually-hidden">Sign out</span>
+                </button>
+              </form>
+            </div>
           ) : (
             <Link className="topbar-home" href="/">
               Home
@@ -136,9 +146,7 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
                     key={item.href}
                     aria-current={current ? "page" : undefined}
                   >
-                    <span className="nav-dot" aria-hidden="true">
-                      {item.label.charAt(0)}
-                    </span>
+                    <Icon name={item.icon ?? "home"} className="nav-icon" />
                     {(role && item.labelFor?.[role]) ?? item.label}
                   </Link>
                 );
@@ -170,13 +178,23 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
   );
 }
 
+function initials(label: string): string {
+  return label
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("");
+}
+
 function DemoBar({ current, pathname }: { current: string; pathname: string }) {
   const persona = findPersona(current);
   return (
     <div className="demo-bar" role="region" aria-label="Demo mode">
       <p>
-        <strong>Demo mode</strong> · Signed in as {persona?.label ?? current}. Synthetic data only — never enter real
-        patient information.
+        <span className="demo-tag">Demo</span>
+        Signed in as <strong>{persona?.label ?? current}</strong>
+        <span className="demo-bar-note"> · Synthetic data only — never enter real patient information.</span>
       </p>
       <form className="demo-switch" method="post" action="/auth/demo">
         <input type="hidden" name="returnTo" value={pathname} />
@@ -190,7 +208,7 @@ function DemoBar({ current, pathname }: { current: string; pathname: string }) {
             ))}
           </select>
         </label>
-        <button type="submit">Switch user</button>
+        <button type="submit">Switch</button>
       </form>
     </div>
   );

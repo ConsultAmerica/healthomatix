@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { InviteDialog } from "@/components/clinic/invite-dialog";
 import { RoleGate } from "@/components/portal/portal-shell";
-import { ROLE_LABELS, useActiveMembership } from "@/components/portal/portal-context";
+import { ROLE_LABELS, useActiveMembership, usePortal } from "@/components/portal/portal-context";
 import { Dialog, EmptyState, FormError, PageHeader, QueryView, Section, StatusBadge, Table, useToast } from "@/components/ui";
 import { api, call, useApiQuery, type ApiProblem, type Schemas } from "@/lib/api";
 import { formatDate, formatDateTime, isFuture, shortId } from "@/lib/time";
@@ -22,6 +22,8 @@ function invitationStatus(invite: Schemas["InvitationRead"]) {
 
 function Team() {
   const membership = useActiveMembership();
+  const { state: portalState } = usePortal();
+  const myUserId = portalState.status === "ready" ? portalState.user.user_id : null;
   const tenant_id = membership.tenant_id;
   const notify = useToast();
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -82,9 +84,23 @@ function Team() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((member) => (
+                  {[...rows]
+                    .sort((a, b) => Number(b.user_id === myUserId) - Number(a.user_id === myUserId))
+                    .map((member) => (
                     <tr key={member.user_id}>
-                      <td className="mono">{shortId(member.user_id)}</td>
+                      <td>
+                        <span className="member-cell">
+                          <span className={`member-avatar role-${member.role}`} aria-hidden="true">
+                            {(ROLE_LABELS[member.role] ?? member.role).charAt(0)}
+                          </span>
+                          <span>
+                            <strong className="cell-title">
+                              {member.user_id === myUserId ? "You" : `Member ${shortId(member.user_id)}`}
+                            </strong>
+                            <span className="cell-sub">Identity managed by your sign-in provider</span>
+                          </span>
+                        </span>
+                      </td>
                       <td>{ROLE_LABELS[member.role] ?? member.role}</td>
                       <td>
                         <StatusBadge status={member.status} />
@@ -153,7 +169,7 @@ function Team() {
                         <td className="cell-actions">
                           {status === "pending" && (
                             <button
-                              className="button button-danger button-small"
+                              className="button button-ghost-danger button-small"
                               type="button"
                               onClick={() => {
                                 setRevokeProblem(null);

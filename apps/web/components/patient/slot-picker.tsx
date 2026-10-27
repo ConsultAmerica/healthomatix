@@ -7,6 +7,12 @@ import { addDays, formatTime, groupByDay, timeZoneLabel } from "@/lib/time";
 
 export type Slot = Schemas["AvailabilityRead"];
 
+function dayPart(slot: Slot, part: "weekday" | "day" | "month"): string {
+  const options: Intl.DateTimeFormatOptions =
+    part === "weekday" ? { weekday: "short" } : part === "day" ? { day: "numeric" } : { month: "short" };
+  return new Intl.DateTimeFormat(undefined, { ...options, timeZone: slot.timezone }).format(new Date(slot.starts_at));
+}
+
 /** Lets a patient choose an open slot from verified providers at their clinic. */
 export function SlotPicker({
   tenantId,
@@ -102,8 +108,9 @@ export function SlotPicker({
                       className={`day-pill${activeDay?.key === group.key ? " is-active" : ""}`}
                       onClick={() => setDay(group.key)}
                     >
-                      <span>{group.label.split(",")[0]}</span>
-                      <strong>{group.label.split(",").slice(1).join(",").trim() || group.label}</strong>
+                      <span>{dayPart(group.items[0], "weekday")}</span>
+                      <strong>{dayPart(group.items[0], "day")}</strong>
+                      <span>{dayPart(group.items[0], "month")}</span>
                       <small>
                         {group.items.length} {group.items.length === 1 ? "time" : "times"}
                       </small>
@@ -129,8 +136,10 @@ export function SlotPicker({
                             onChange={() => onSelect(slot)}
                           />
                           <strong>{formatTime(slot.starts_at, slot.timezone)}</strong>
-                          <span>{slot.provider_name || "Clinic provider"}</span>
-                          {locations.length > 1 && <span>{slot.location_name}</span>}
+                          <span>
+                            {slot.provider_name || "Clinic provider"}
+                            {locations.length > 1 && !location && <> · {slot.location_name}</>}
+                          </span>
                         </label>
                       );
                     })}

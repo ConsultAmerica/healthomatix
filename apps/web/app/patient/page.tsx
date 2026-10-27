@@ -63,15 +63,17 @@ export default function PatientHomePage() {
       <div className="stat-grid">
         <StatTile
           label="Upcoming appointments"
+          icon="calendar"
           value={scheduling ? (appointments.state.status === "success" ? upcoming.length : "—") : "Off"}
           href="/patient/appointments"
         />
         <StatTile
           label="Documents"
+          icon="file"
           value={documents.state.status === "success" ? documents.state.data.length : "—"}
           href="/patient/records"
         />
-        <StatTile label="Active consents" value={activeConsents} href="/patient/profile" />
+        <StatTile label="Active consents" icon="shield" value={activeConsents} href="/patient/profile" />
       </div>
 
       <Section title="Your next appointment">

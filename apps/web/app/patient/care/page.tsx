@@ -100,6 +100,7 @@ export default function BookCarePage() {
         description={`Choose a 30-minute visit with a verified provider at ${tenant_name}.`}
       />
 
+      <FormError problem={problem} />
       <div className="booking-layout">
         <Section title="1. Choose a time">
           <SlotPicker tenantId={tenant_id} selected={selected} onSelect={choose} reloadToken={reloadToken} />
@@ -109,7 +110,6 @@ export default function BookCarePage() {
           <h2 id="summary-title" className="card-title">
             2. Review and confirm
           </h2>
-          <FormError problem={problem} />
           {selected ? (
             <>
               <dl className="summary-list">
@@ -151,6 +151,20 @@ export default function BookCarePage() {
           )}
         </aside>
       </div>
+
+      {selected && (
+        <div className="mobile-confirm-bar" role="region" aria-label="Selected time">
+          <div>
+            <strong>{formatTime(selected.starts_at, selected.timezone)}</strong>
+            <span>
+              {formatDayHeading(selected.starts_at, selected.timezone)} · {selected.provider_name || "Clinic provider"}
+            </span>
+          </div>
+          <button className="button button-small" type="button" onClick={confirm} disabled={pending} aria-busy={pending}>
+            {pending ? "Booking…" : "Confirm"}
+          </button>
+        </div>
+      )}
     </>
   );
 }

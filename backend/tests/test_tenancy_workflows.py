@@ -221,3 +221,40 @@ def test_invalid_timezone_and_duplicate_clinic_slug_are_reported(
     duplicate = client.post("/api/v1/tenants", json=payload)
     assert duplicate.status_code == 409
     assert duplicate.json()["error"]["code"] == "CLINIC_SLUG_UNAVAILABLE"
+
+
+def test_provider_can_join_a_second_clinic_and_keeps_profile(
+    tenancy_client: tuple[TestClient, Session, User, list[User]],
+) -> None:
+    client, session, owner, invited_users = tenancy_client
+    provider = User(issuer="https://identity.example", subject="invited-provider")
+    session.add(provider)
+    session.commit()
+    invited_users.append(provider)
+
+    tenant_ids = []
+    for slug in ("first-provider-clinic", "second-provider-clinic"):
+        app.dependency_overrides[get_current_user] = lambda: owner
+        tenant_id = client.post(
+            "/api/v1/tenants",
+            json={"slug": slug, "display_name": slug, "location_name": "Main", "timezone": "UTC"},
+        ).json()["tenant_id"]
+        code = client.post(
+            f"/api/v1/tenants/{tenant_id}/invitations", json={"role": "provider"}
+        ).json()["invitation_code"]
+        app.dependency_overrides[get_current_user] = lambda: invited_users[0]
+        accepted = client.post("/api/v1/invitations/accept", json={"invitation_code": code})
+        assert accepted.status_code == 200, accepted.text
+        tenant_ids.append(tenant_id)
+        if len(tenant_ids) == 1:
+            client.put(
+                f"/api/v1/tenants/{tenant_id}/providers/me",
+                json={"display_name": "Synthetic Provider", "specialty": "Family medicine"},
+            )
+
+    second = client.get(f"/api/v1/tenants/{tenant_ids[1]}/providers/me")
+    assert second.status_code == 200, second.text
+    assert second.json()["display_name"] == "Synthetic Provider"
+    assert {m.tenant_id for m in session.scalars(
+        select(TenantMembership).where(TenantMembership.user_id == provider.id)
+    )} == set(tenant_ids)

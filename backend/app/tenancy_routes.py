@@ -330,7 +330,9 @@ def accept_invitation(
                 if session.get(PatientProfile, user.id) is None:
                     session.add(PatientProfile(user_id=user.id))
             elif invitation.role == "provider":
-                session.add(ProviderProfile(user_id=user.id, profile_status="pending"))
+                # Profiles are per user, so a provider joining a second clinic keeps theirs.
+                if session.get(ProviderProfile, user.id) is None:
+                    session.add(ProviderProfile(user_id=user.id, profile_status="pending"))
             invitation.status = "accepted"
             invitation.accepted_by_user_id = user.id
             invitation.accepted_at = now

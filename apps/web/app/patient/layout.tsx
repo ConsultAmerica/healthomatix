@@ -12,12 +12,12 @@ const config: PortalConfig = {
   kind: "patient",
   heading: "YOUR SPACE",
   nav: [
-    { label: "Home", href: "/patient" },
-    { label: "Book care", href: "/patient/care" },
-    { label: "Appointments", href: "/patient/appointments" },
-    { label: "Records", href: "/patient/records" },
-    { label: "Messages", href: "/patient/messages" },
-    { label: "Profile & consent", href: "/patient/profile" },
+    { label: "Home", href: "/patient", icon: "home" },
+    { label: "Book care", href: "/patient/care", icon: "plus" },
+    { label: "Appointments", href: "/patient/appointments", icon: "calendar" },
+    { label: "Records", href: "/patient/records", icon: "file" },
+    { label: "Messages", href: "/patient/messages", icon: "message" },
+    { label: "Profile & consent", href: "/patient/profile", icon: "shield" },
   ],
   secondary: [
     { label: "Connect another clinic", href: "/patient/join" },

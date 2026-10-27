@@ -238,8 +238,9 @@ function Availability() {
                         <ul className="slot-list">
                           {day.items.map((slot) => (
                             <li className={`slot-chip slot-${slot.status}`} key={slot.availability_id}>
-                              <span>
-                                {formatTime(slot.starts_at, slot.timezone)} · {slot.location_name}
+                              <span className="slot-chip-text">
+                                <strong>{formatTime(slot.starts_at, slot.timezone)}</strong>
+                                <span>{slot.location_name}</span>
                               </span>
                               <StatusBadge status={slot.status} />
                             </li>

@@ -61,9 +61,9 @@ export default function ClinicOverviewPage() {
   return (
     <>
       <PageHeader
-        eyebrow={`${ROLE_LABELS[role]?.toUpperCase() ?? role} · ${membership.tenant_name.toUpperCase()}`}
-        title="Overview"
-        description="What needs your attention at this clinic today."
+        eyebrow={new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long" }).format(new Date()).toUpperCase()}
+        title={`${membership.tenant_name}`}
+        description={`You're signed in as ${ROLE_LABELS[role]?.toLowerCase() ?? role}. Here's what needs your attention today.`}
         actions={
           (isAdmin || role === "staff") && (
             <button className="button button-small" type="button" onClick={() => setInviteOpen(true)}>
@@ -75,11 +75,13 @@ export default function ClinicOverviewPage() {
 
       {isAdmin && (
         <div className="stat-grid">
-          <StatTile label="Team members" value={count(members.state)} href="/clinic/team" />
-          <StatTile label="Pending invitations" value={pendingInvites} href="/clinic/team" />
-          <StatTile label="Patients" value={count(patients.state)} href="/clinic/patients" />
+          <StatTile label="Team members" icon="team" value={count(members.state)} href="/clinic/team" />
+          <StatTile label="Pending invitations" icon="mail" value={pendingInvites} hint="Codes not yet used" href="/clinic/team" />
+          <StatTile label="Patients" icon="users" value={count(patients.state)} hint="Connected to this clinic" href="/clinic/patients" />
           <StatTile
             label="Credentials to review"
+            icon="badge"
+            attention={credentials.state.status === "success" && credentials.state.data.length > 0}
             value={count(credentials.state)}
             hint="Providers awaiting verification"
             href="/clinic/providers"
@@ -89,8 +91,8 @@ export default function ClinicOverviewPage() {
 
       {role === "staff" && (
         <div className="stat-grid">
-          <StatTile label="Patients" value={count(patients.state)} href="/clinic/patients" />
-          <StatTile label="Appointments next 7 days" value={scheduling ? count(upcoming.state) : "Off"} href="/clinic/schedule" />
+          <StatTile label="Patients" icon="users" value={count(patients.state)} href="/clinic/patients" />
+          <StatTile label="Appointments next 7 days" icon="calendar" value={scheduling ? count(upcoming.state) : "Off"} href="/clinic/schedule" />
         </div>
       )}
 

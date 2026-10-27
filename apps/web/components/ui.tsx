@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -12,6 +13,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
+import { Icon, type IconName } from "@/components/icons";
 import type { ApiProblem, QueryState } from "@/lib/api";
 
 /* ——— Layout ——— */
@@ -74,25 +76,43 @@ export function StatTile({
   value,
   hint,
   href,
+  icon,
+  attention = false,
 }: {
   label: string;
   value: ReactNode;
   hint?: string;
   href?: string;
+  icon?: IconName;
+  /** Highlights the tile when the value needs action (for example, items awaiting review). */
+  attention?: boolean;
 }) {
   const body = (
     <>
-      <span className="stat-label">{label}</span>
+      <span className="stat-top">
+        <span className="stat-label">{label}</span>
+        {icon && (
+          <span className="stat-icon">
+            <Icon name={icon} size={17} />
+          </span>
+        )}
+      </span>
       <strong className="stat-value">{value}</strong>
       {hint && <span className="stat-hint">{hint}</span>}
+      {href && (
+        <span className="stat-more">
+          View <Icon name="arrowRight" size={14} />
+        </span>
+      )}
     </>
   );
+  const className = `stat-tile${href ? " stat-tile-link" : ""}${attention ? " stat-attention" : ""}`;
   return href ? (
-    <Link className="stat-tile stat-tile-link" href={href}>
+    <Link className={className} href={href}>
       {body}
     </Link>
   ) : (
-    <div className="stat-tile">{body}</div>
+    <div className={className}>{body}</div>
   );
 }
 
@@ -197,7 +217,8 @@ export function ProblemState({
 }) {
   const copy = problemCopy[problem.kind];
   const canRetry = onRetry && ["unavailable", "offline", "unexpected", "conflict"].includes(problem.kind);
-  const returnTo = typeof window !== "undefined" ? window.location.pathname : "/patient";
+  const pathname = usePathname();
+  const returnTo = pathname || "/";
   return (
     <div className={`state-panel state-problem state-${problem.kind}${compact ? " state-compact" : ""}`} role="alert">
       <span className="state-icon" aria-hidden="true">{copy.icon}</span>
