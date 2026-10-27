@@ -84,6 +84,20 @@ OIDC authentication and active tenant/provider/patient authorization. Automated
 tests use synthetic fixtures and dependency overrides. Appointment notification
 events remain in a pending outbox; there is no delivery integration.
 
+## Deploying to Vercel with Neon
+
+The repository deploys as two Vercel projects in the same team:
+
+| Project | Root directory | Notes |
+|---|---|---|
+| API | `backend` | FastAPI runs as a Vercel Function (`[tool.vercel]` in `pyproject.toml`). Attach a Neon database from the Vercel Marketplace; its `DATABASE_URL` is converted to the psycopg driver automatically, and `alembic upgrade head` runs as the build step. |
+| Web | `apps/web` | Next.js. Set `HEALTHOMATIX_API_URL` to the API project's URL, plus `APP_BASE_URL`, `SESSION_SECRET`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, and `OIDC_AUDIENCE`. |
+
+Set `OIDC_ISSUER`, `OIDC_AUDIENCE`, and `OIDC_JWKS_URL` on the API project as
+well. Until an identity provider is configured, both portals show a
+sign-in-unavailable state. Keep `SCHEDULING_ENABLED=false` outside approved
+synthetic demonstrations.
+
 Never put real patient information, credentials, tokens, or production secrets
 in fixtures, screenshots, logs, or this repository. Review
 [Authentication and PHI boundaries](./docs/auth-and-phi-boundaries.md) and the

@@ -24,6 +24,18 @@ def _platform_admin_identities(value: str) -> tuple[tuple[str, str], ...]:
     return tuple(dict.fromkeys(identities))
 
 
+def _database_url() -> str:
+    # Vercel's Neon integration provides DATABASE_URL (and POSTGRES_URL) with the
+    # generic postgres scheme; use the installed psycopg 3 driver explicitly.
+    value = (os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL") or "").strip()
+    if not value:
+        return "sqlite:///./healthomatix-dev.db"
+    for prefix in ("postgres://", "postgresql://"):
+        if value.startswith(prefix):
+            return "postgresql+psycopg://" + value[len(prefix) :]
+    return value
+
+
 @dataclass(frozen=True)
 class Settings:
     database_url: str
@@ -45,7 +57,7 @@ def load_settings() -> Settings:
     if scheduling_value not in {"true", "false", "1", "0", "yes", "no"}:
         raise ValueError("SCHEDULING_ENABLED must be a boolean value.")
     return Settings(
-        database_url=os.getenv("DATABASE_URL", "sqlite:///./healthomatix-dev.db"),
+        database_url=_database_url(),
         environment=os.getenv("HEALTHOMATIX_ENV", "development").strip().lower(),
         scheduling_enabled=scheduling_value in {"true", "1", "yes"},
         oidc_issuer=os.getenv("OIDC_ISSUER", "").strip().rstrip("/"),

@@ -16,6 +16,13 @@ dependencies = [
 [project.optional-dependencies]
 test = ["httpx>=0.27,<1", "pytest>=8,<10"]
 
+[tool.vercel]
+entrypoint = "app.main:app"
+
+[tool.vercel.scripts]
+# Applies pending migrations to the attached Neon database on each deploy.
+build = "python -m alembic upgrade head"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
