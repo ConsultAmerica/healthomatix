@@ -73,13 +73,15 @@ async function proxy(request: NextRequest, context: ProxyContext) {
   const target = `${base}/api/v1/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`;
   let upstream: Response;
   try {
+    // Preserve multipart/binary payloads (document uploads). JSON still works as bytes.
+    const requestBody = mutating ? await request.arrayBuffer() : undefined;
     upstream = await fetch(target, {
       method: request.method,
       headers,
-      body: mutating ? await request.text() : undefined,
+      body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
       cache: "no-store",
       redirect: "manual",
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(30000),
     });
   } catch {
     return problem(502, "API_UNREACHABLE", "The Healthomatix API could not be reached. Try again shortly.");
@@ -88,7 +90,7 @@ async function proxy(request: NextRequest, context: ProxyContext) {
   const body = upstream.status === 204 ? null : await upstream.arrayBuffer();
   const response = new NextResponse(body, { status: upstream.status });
   response.headers.set("Cache-Control", "no-store");
-  for (const name of ["content-type", "x-request-id"]) {
+  for (const name of ["content-type", "content-disposition", "x-request-id"]) {
     const value = upstream.headers.get(name);
     if (value) {
       response.headers.set(name, value);

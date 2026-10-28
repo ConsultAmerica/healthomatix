@@ -244,6 +244,7 @@ class MedicalDocument(Base):
             name="ck_medical_document_lifecycle",
         ),
         Index("ix_medical_document_patient_created", "tenant_id", "patient_user_id", "created_at"),
+        Index("ix_medical_document_clinic_patient", "tenant_id", "clinic_patient_id", "created_at"),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
@@ -252,6 +253,9 @@ class MedicalDocument(Base):
     )
     patient_user_id: Mapped[str] = mapped_column(
         ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    clinic_patient_id: Mapped[str | None] = mapped_column(
+        ForeignKey("clinic_patients.id", ondelete="SET NULL"), nullable=True
     )
     uploaded_by_user_id: Mapped[str] = mapped_column(
         ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
@@ -264,6 +268,65 @@ class MedicalDocument(Base):
     lifecycle_state: Mapped[str] = mapped_column(
         String(16), default="reserved", nullable=False
     )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False
+    )
+
+
+class MessageThread(Base):
+    __tablename__ = "message_threads"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id", name="uq_message_thread_tenant_id"),
+        CheckConstraint(
+            "status IN ('open', 'closed')",
+            name="ck_message_thread_status",
+        ),
+        Index("ix_message_thread_tenant_patient", "tenant_id", "clinic_patient_id", "updated_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    tenant_id: Mapped[str] = mapped_column(
+        ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
+    )
+    clinic_patient_id: Mapped[str] = mapped_column(
+        ForeignKey("clinic_patients.id", ondelete="CASCADE"), nullable=False
+    )
+    subject: Mapped[str] = mapped_column(String(200), nullable=False)
+    created_by_user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    status: Mapped[str] = mapped_column(String(16), default="open", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False
+    )
+
+
+class Message(Base):
+    __tablename__ = "messages"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "thread_id"],
+            ["message_threads.tenant_id", "message_threads.id"],
+            name="fk_message_thread_tenant",
+            ondelete="CASCADE",
+        ),
+        Index("ix_message_thread_created", "thread_id", "created_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    tenant_id: Mapped[str] = mapped_column(
+        ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
+    )
+    thread_id: Mapped[str] = mapped_column(
+        ForeignKey("message_threads.id", ondelete="CASCADE"), nullable=False
+    )
+    sender_user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    body: Mapped[str] = mapped_column(String(4000), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, nullable=False
     )

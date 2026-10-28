@@ -65,6 +65,7 @@ def auth_config() -> dict[str, bool]:
     return {
         "oidc_configured": settings.oidc_configured,
         "scheduling_enabled": settings.scheduling_enabled,
+        "document_storage_configured": settings.document_storage_configured,
         "demo_auth_enabled": settings.demo_auth_enabled,
     }
 
@@ -583,6 +584,7 @@ def list_documents(
             size_bytes=row.size_bytes,
             lifecycle_state=row.lifecycle_state,
             created_at=row.created_at,
+            clinic_patient_id=row.clinic_patient_id,
         )
         for row in rows
     ]

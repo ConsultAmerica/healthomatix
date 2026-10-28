@@ -189,6 +189,20 @@
         "title": "AvailabilityWrite",
         "type": "object"
       },
+      "Body_upload_document_api_v1_tenants__tenant_id__documents_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_document_api_v1_tenants__tenant_id__documents_post",
+        "type": "object"
+      },
       "ClinicOnboardingWrite": {
         "additionalProperties": false,
         "properties": {
@@ -225,6 +239,59 @@
           "timezone"
         ],
         "title": "ClinicOnboardingWrite",
+        "type": "object"
+      },
+      "ClinicPatientDetailRead": {
+        "additionalProperties": false,
+        "description": "Roster-safe detail. No chart PHI beyond clinic-assigned identifiers.",
+        "properties": {
+          "chart_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chart Number"
+          },
+          "clinic_patient_id": {
+            "title": "Clinic Patient Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "document_count": {
+            "default": 0,
+            "title": "Document Count",
+            "type": "integer"
+          },
+          "open_thread_count": {
+            "default": 0,
+            "title": "Open Thread Count",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "upcoming_appointment_count": {
+            "default": 0,
+            "title": "Upcoming Appointment Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "clinic_patient_id",
+          "chart_number",
+          "status",
+          "created_at"
+        ],
+        "title": "ClinicPatientDetailRead",
         "type": "object"
       },
       "ClinicPatientRead": {
@@ -609,6 +676,17 @@
       "DocumentRead": {
         "additionalProperties": false,
         "properties": {
+          "clinic_patient_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clinic Patient Id"
+          },
           "content_type": {
             "title": "Content Type",
             "type": "string"
@@ -860,6 +938,57 @@
           "status"
         ],
         "title": "MembershipRead",
+        "type": "object"
+      },
+      "MessageCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "MessageCreate",
+        "type": "object"
+      },
+      "MessageRead": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "message_id": {
+            "title": "Message Id",
+            "type": "string"
+          },
+          "sender_user_id": {
+            "title": "Sender User Id",
+            "type": "string"
+          },
+          "thread_id": {
+            "title": "Thread Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message_id",
+          "thread_id",
+          "sender_user_id",
+          "body",
+          "created_at"
+        ],
+        "title": "MessageRead",
         "type": "object"
       },
       "PatientProfileRead": {
@@ -1160,6 +1289,75 @@
           "requested_until"
         ],
         "title": "SupportAccessRequestWrite",
+        "type": "object"
+      },
+      "ThreadCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "subject": {
+            "maxLength": 200,
+            "minLength": 2,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "body"
+        ],
+        "title": "ThreadCreate",
+        "type": "object"
+      },
+      "ThreadRead": {
+        "additionalProperties": false,
+        "properties": {
+          "clinic_patient_id": {
+            "title": "Clinic Patient Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "message_count": {
+            "title": "Message Count",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "thread_id": {
+            "title": "Thread Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "thread_id",
+          "clinic_patient_id",
+          "subject",
+          "status",
+          "created_at",
+          "updated_at",
+          "message_count"
+        ],
+        "title": "ThreadRead",
         "type": "object"
       },
       "UserRead": {
@@ -1967,6 +2165,109 @@
           }
         ],
         "summary": "List Documents"
+      },
+      "post": {
+        "operationId": "upload_document_api_v1_tenants__tenant_id__documents_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_document_api_v1_tenants__tenant_id__documents_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload Document"
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/documents/{document_id}/content": {
+      "get": {
+        "operationId": "download_document_api_v1_tenants__tenant_id__documents__document_id__content_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Download Document"
       }
     },
     "/api/v1/tenants/{tenant_id}/invitations": {
@@ -2618,6 +2919,116 @@
         "summary": "Withdraw Consent"
       }
     },
+    "/api/v1/tenants/{tenant_id}/patients/{clinic_patient_id}": {
+      "get": {
+        "operationId": "get_clinic_patient_api_v1_tenants__tenant_id__patients__clinic_patient_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "clinic_patient_id",
+            "required": true,
+            "schema": {
+              "title": "Clinic Patient Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicPatientDetailRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Clinic Patient"
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/patients/{clinic_patient_id}/documents": {
+      "get": {
+        "operationId": "list_patient_documents_for_clinic_api_v1_tenants__tenant_id__patients__clinic_patient_id__documents_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "clinic_patient_id",
+            "required": true,
+            "schema": {
+              "title": "Clinic Patient Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentRead"
+                  },
+                  "title": "Response List Patient Documents For Clinic Api V1 Tenants  Tenant Id  Patients  Clinic Patient Id  Documents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Patient Documents For Clinic"
+      }
+    },
     "/api/v1/tenants/{tenant_id}/provider-credentials": {
       "get": {
         "operationId": "list_provider_credentials_for_review_api_v1_tenants__tenant_id__provider_credentials_get",
@@ -3076,6 +3487,224 @@
           }
         ],
         "summary": "Review Provider Credential"
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/threads": {
+      "get": {
+        "operationId": "list_threads_api_v1_tenants__tenant_id__threads_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ThreadRead"
+                  },
+                  "title": "Response List Threads Api V1 Tenants  Tenant Id  Threads Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Threads"
+      },
+      "post": {
+        "operationId": "create_thread_api_v1_tenants__tenant_id__threads_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThreadCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Thread"
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/threads/{thread_id}/messages": {
+      "get": {
+        "operationId": "list_messages_api_v1_tenants__tenant_id__threads__thread_id__messages_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "thread_id",
+            "required": true,
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MessageRead"
+                  },
+                  "title": "Response List Messages Api V1 Tenants  Tenant Id  Threads  Thread Id  Messages Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Messages"
+      },
+      "post": {
+        "operationId": "post_message_api_v1_tenants__tenant_id__threads__thread_id__messages_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "thread_id",
+            "required": true,
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Message"
       }
     }
   }

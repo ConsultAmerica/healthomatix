@@ -221,6 +221,24 @@ export interface paths {
         /** List Documents */
         get: operations["list_documents_api_v1_tenants__tenant_id__documents_get"];
         put?: never;
+        /** Upload Document */
+        post: operations["upload_document_api_v1_tenants__tenant_id__documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/documents/{document_id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Document */
+        get: operations["download_document_api_v1_tenants__tenant_id__documents__document_id__content_get"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -385,6 +403,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tenants/{tenant_id}/patients/{clinic_patient_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Clinic Patient */
+        get: operations["get_clinic_patient_api_v1_tenants__tenant_id__patients__clinic_patient_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/patients/{clinic_patient_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Patient Documents For Clinic */
+        get: operations["list_patient_documents_for_clinic_api_v1_tenants__tenant_id__patients__clinic_patient_id__documents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tenants/{tenant_id}/provider-credentials": {
         parameters: {
             query?: never;
@@ -467,6 +519,42 @@ export interface paths {
         put?: never;
         /** Review Provider Credential */
         post: operations["review_provider_credential_api_v1_tenants__tenant_id__providers__provider_user_id__credentials__credential_id__review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Threads */
+        get: operations["list_threads_api_v1_tenants__tenant_id__threads_get"];
+        put?: never;
+        /** Create Thread */
+        post: operations["create_thread_api_v1_tenants__tenant_id__threads_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/threads/{thread_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Messages */
+        get: operations["list_messages_api_v1_tenants__tenant_id__threads__thread_id__messages_get"];
+        put?: never;
+        /** Post Message */
+        post: operations["post_message_api_v1_tenants__tenant_id__threads__thread_id__messages_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -564,6 +652,11 @@ export interface components {
              */
             starts_at: string;
         };
+        /** Body_upload_document_api_v1_tenants__tenant_id__documents_post */
+        Body_upload_document_api_v1_tenants__tenant_id__documents_post: {
+            /** File */
+            file: string;
+        };
         /** ClinicOnboardingWrite */
         ClinicOnboardingWrite: {
             /** Display Name */
@@ -574,6 +667,38 @@ export interface components {
             slug: string;
             /** Timezone */
             timezone: string;
+        };
+        /**
+         * ClinicPatientDetailRead
+         * @description Roster-safe detail. No chart PHI beyond clinic-assigned identifiers.
+         */
+        ClinicPatientDetailRead: {
+            /** Chart Number */
+            chart_number: string | null;
+            /** Clinic Patient Id */
+            clinic_patient_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Document Count
+             * @default 0
+             */
+            document_count: number;
+            /**
+             * Open Thread Count
+             * @default 0
+             */
+            open_thread_count: number;
+            /** Status */
+            status: string;
+            /**
+             * Upcoming Appointment Count
+             * @default 0
+             */
+            upcoming_appointment_count: number;
         };
         /** ClinicPatientRead */
         ClinicPatientRead: {
@@ -711,6 +836,8 @@ export interface components {
         };
         /** DocumentRead */
         DocumentRead: {
+            /** Clinic Patient Id */
+            clinic_patient_id?: string | null;
             /** Content Type */
             content_type: string;
             /**
@@ -815,6 +942,27 @@ export interface components {
             tenant_id: string;
             /** Tenant Name */
             tenant_name: string;
+        };
+        /** MessageCreate */
+        MessageCreate: {
+            /** Body */
+            body: string;
+        };
+        /** MessageRead */
+        MessageRead: {
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Message Id */
+            message_id: string;
+            /** Sender User Id */
+            sender_user_id: string;
+            /** Thread Id */
+            thread_id: string;
         };
         /** PatientProfileRead */
         PatientProfileRead: {
@@ -971,6 +1119,36 @@ export interface components {
             tenant_id: string;
             /** Ticket Reference */
             ticket_reference: string;
+        };
+        /** ThreadCreate */
+        ThreadCreate: {
+            /** Body */
+            body: string;
+            /** Subject */
+            subject: string;
+        };
+        /** ThreadRead */
+        ThreadRead: {
+            /** Clinic Patient Id */
+            clinic_patient_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Message Count */
+            message_count: number;
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string;
+            /** Thread Id */
+            thread_id: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** UserRead */
         UserRead: {
@@ -1474,6 +1652,73 @@ export interface operations {
             };
         };
     };
+    upload_document_api_v1_tenants__tenant_id__documents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_document_api_v1_tenants__tenant_id__documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_document_api_v1_tenants__tenant_id__documents__document_id__content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_invitations_api_v1_tenants__tenant_id__invitations_get: {
         parameters: {
             query?: never;
@@ -1897,6 +2142,70 @@ export interface operations {
             };
         };
     };
+    get_clinic_patient_api_v1_tenants__tenant_id__patients__clinic_patient_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                clinic_patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicPatientDetailRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_patient_documents_for_clinic_api_v1_tenants__tenant_id__patients__clinic_patient_id__documents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                clinic_patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_provider_credentials_for_review_api_v1_tenants__tenant_id__provider_credentials_get: {
         parameters: {
             query?: {
@@ -2155,6 +2464,140 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CredentialRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_threads_api_v1_tenants__tenant_id__threads_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_thread_api_v1_tenants__tenant_id__threads_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ThreadCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_messages_api_v1_tenants__tenant_id__threads__thread_id__messages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_message_api_v1_tenants__tenant_id__threads__thread_id__messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageRead"];
                 };
             };
             /** @description Validation Error */

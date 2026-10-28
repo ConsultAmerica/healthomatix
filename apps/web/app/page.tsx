@@ -161,10 +161,10 @@ export default function HomePage() {
           <BrandMark />
         </Link>
         <nav className="main-nav" aria-label="Main navigation">
-          <a href="#overview">Overview</a>
-          <a href="#features">Features</a>
-          <a href="#objects">Objects</a>
-          <a href="#connections">Connections</a>
+          <a href="#overview">Platform</a>
+          <a href="#features">Capabilities</a>
+          <a href="#objects">Schemas</a>
+          <a href="#connections">Network</a>
           <a href="#faq">FAQ</a>
         </nav>
         <div className="header-actions">
@@ -183,12 +183,11 @@ export default function HomePage() {
         </div>
         <HeroStage />
         <div className="hero-copy">
-          <p className="hero-eyebrow">Connected care platform</p>
+          <p className="hero-eyebrow">Healthcare platform</p>
           <h1 id="home-title" className="brand-hero">Healthomatix</h1>
           <p className="hero-lead">
-            Unlock and activate care workflows across clinics and patients. Healthomatix
-            connects ClinicRead workspaces, AppointmentRead schedules, CredentialRead gates,
-            and ConsentRead privacy—so every role stays in sync without false live access.
+            Connect clinics and patients on one API-backed surface—scheduling, credentials,
+            and consent kept clear, without implying live access to charts.
           </p>
           <div className="hero-actions">
             <Link className="button" href="/clinic">
@@ -207,18 +206,18 @@ export default function HomePage() {
       </section>
 
       <nav className="page-rail" aria-label="On this page">
-        <a href="#overview">Overview</a>
-        <a href="#features">Features</a>
-        <a href="#applications">Applications</a>
-        <a href="#objects">Objects</a>
-        <a href="#connections">Connections</a>
-        <a href="#approach">Approach</a>
+        <a href="#overview">Platform</a>
+        <a href="#features">Capabilities</a>
+        <a href="#applications">Solutions</a>
+        <a href="#objects">Schemas</a>
+        <a href="#connections">Network</a>
+        <a href="#approach">Principles</a>
         <a href="#faq">FAQ</a>
       </nav>
 
       <section className="overview" id="overview" aria-labelledby="overview-title" data-reveal>
         <div className="section-intro section-intro-wide">
-          <p className="section-kicker">Overview</p>
+          <p className="section-kicker">Platform</p>
           <h2 id="overview-title">Build agents of care on unified clinic context</h2>
           <p>
             Point-and-click readiness for care teams, consent-aware patient views, and
@@ -230,7 +229,7 @@ export default function HomePage() {
 
       <section className="features" id="features" aria-labelledby="features-title" data-reveal>
         <div className="section-intro section-intro-wide">
-          <p className="section-kicker">Features</p>
+          <p className="section-kicker">Capabilities</p>
           <h2 id="features-title">Deliver relevant care responses with search across your clinic objects</h2>
           <p>
             Rotate through workspace, portal, scheduling, credentials, and consent—each panel
@@ -242,7 +241,7 @@ export default function HomePage() {
 
       <section className="applications" id="applications" aria-labelledby="applications-title" data-reveal>
         <div className="section-intro">
-          <p className="section-kicker">Applications</p>
+          <p className="section-kicker">Solutions</p>
           <h2 id="applications-title">Explore common applications to get started</h2>
           <p>
             Pick a path that matches your role. Each card opens a demonstration surface—structure
@@ -274,11 +273,11 @@ export default function HomePage() {
 
       <section className="objects" id="objects" aria-labelledby="objects-title" data-reveal>
         <div className="section-intro">
-          <p className="section-kicker">Platform objects</p>
-          <h2 id="objects-title">Backend objects that power every preview</h2>
+          <p className="section-kicker">Schemas</p>
+          <h2 id="objects-title">The objects behind every clinic and patient preview</h2>
           <p>
-            These schemas come from the Healthomatix API. Landing mocks and portal screens
-            speak the same language—so product, design, and engineering stay aligned.
+            Straight from the Healthomatix API—shared by landing mocks and portal screens so
+            product, design, and engineering work from one contract.
           </p>
         </div>
         <div className="object-grid">
@@ -343,7 +342,7 @@ export default function HomePage() {
       <section className="connections" id="connections" aria-labelledby="connections-title" data-reveal>
         <div className="connections-heading">
           <div>
-            <p className="section-kicker">Connections</p>
+            <p className="section-kicker">Network</p>
             <h2 id="connections-title">Made for everyone in the care journey</h2>
           </div>
           <p>
@@ -381,7 +380,7 @@ export default function HomePage() {
 
       <section className="why" id="approach" aria-labelledby="why-title" data-reveal>
         <div className="section-intro">
-          <p className="section-kicker">Approach</p>
+          <p className="section-kicker">Principles</p>
           <h2 id="why-title">Why this approach to connected care</h2>
           <p>
             User-centered product decisions grounded in API reality—keeping clinics productive

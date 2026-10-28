@@ -1,42 +1,34 @@
-"use client";
-
-import { useId } from "react";
-
 export function BrandMark() {
-  const uid = useId().replace(/:/g, "");
-  const heartId = `brandHeart-${uid}`;
-  const pulseId = `brandPulse-${uid}`;
-
   return (
     <span className="brand-mark" aria-hidden="true">
-      <svg className="brand-mark-icon" viewBox="0 0 40 40" fill="none">
-        <defs>
-          <linearGradient id={heartId} x1="8" y1="4" x2="34" y2="36" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#089f7f" />
-            <stop offset="0.55" stopColor="#047adb" />
-            <stop offset="1" stopColor="#06b6d4" />
-          </linearGradient>
-          <linearGradient id={pulseId} x1="9" y1="18" x2="31" y2="24" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#ffffff" />
-            <stop offset="1" stopColor="#dff0ff" />
-          </linearGradient>
-        </defs>
+      <svg
+        className="brand-mark-icon"
+        viewBox="0 0 64 64"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        {/* Brand-sheet leaf: upright droplet with soft left inset */}
         <path
-          d="M20 3.5c-8.2 0-14.5 6.5-14.5 14.8C5.5 29 20 37 20 37s14.5-8 14.5-18.7C34.5 10 28.2 3.5 20 3.5Z"
-          fill={`url(#${heartId})`}
+          className="brand-mark-leaf"
+          d="M33.2 4.8c11.2 3.6 19.6 15.2 18.8 28.4C51.2 48.4 40.4 58.4 27.6 59c-2.6.1-4.4-2.1-3.9-4.5C26.2 39.6 21.6 26.4 11.2 18.2 16.4 10.4 24.4 6 33.2 4.8Z"
         />
+        {/* ECG pulse — white cut through the leaf */}
         <path
-          d="M9.5 21h6l2.7-6.5 4.1 12 2.6-7h5.6"
-          stroke={`url(#${pulseId})`}
+          className="brand-mark-pulse"
+          d="M14 33.2h9.6l3.6-8.8 5.4 17.6 3.8-9.6H50"
+          strokeWidth="3.2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth="2.3"
         />
-        <circle cx="34" cy="5.5" r="3.5" fill="#047adb" stroke="#fff" strokeWidth="1.2" />
+        {/* Coral vitality accent */}
+        <circle className="brand-mark-accent" cx="50.4" cy="11.2" r="4.4" />
       </svg>
       <span className="brand-mark-copy">
-        <span className="brand-mark-name">Healthomatix</span>
-        <span className="brand-mark-tagline">HEALTHY LIFE, AUTOMATED</span>
+        <span className="brand-mark-wordmark">
+          <span className="brand-mark-health">Health</span>
+          <span className="brand-mark-omatix">omatix</span>
+        </span>
       </span>
     </span>
   );

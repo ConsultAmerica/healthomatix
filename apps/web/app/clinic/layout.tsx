@@ -15,6 +15,7 @@ const config: PortalConfig = {
     { label: "Overview", href: "/clinic", icon: "home" },
     { label: "Schedule", href: "/clinic/schedule", icon: "calendar", roles: ["tenant_admin", "staff", "provider"] },
     { label: "Patients", href: "/clinic/patients", icon: "users", roles: ["tenant_admin", "staff"] },
+    { label: "Messages", href: "/clinic/messages", icon: "message", roles: ["tenant_admin", "staff", "provider"] },
     { label: "Team", href: "/clinic/team", icon: "team", roles: ["tenant_admin"] },
     {
       label: "Providers",

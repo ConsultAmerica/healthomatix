@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { InviteDialog } from "@/components/clinic/invite-dialog";
 import { RoleGate } from "@/components/portal/portal-shell";
@@ -85,17 +86,32 @@ function Patients() {
                       <th scope="col">Chart number</th>
                       <th scope="col">Status</th>
                       <th scope="col">Joined</th>
+                      <th scope="col">
+                        <span className="visually-hidden">Actions</span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map((patient) => (
                       <tr key={patient.clinic_patient_id}>
-                        <td className="mono">{shortId(patient.clinic_patient_id)}</td>
+                        <td className="mono">
+                          <Link href={`/clinic/patients/${patient.clinic_patient_id}`}>
+                            {shortId(patient.clinic_patient_id)}
+                          </Link>
+                        </td>
                         <td>{patient.chart_number || <span className="muted">Not assigned</span>}</td>
                         <td>
                           <StatusBadge status={patient.status} />
                         </td>
                         <td>{formatDate(patient.created_at)}</td>
+                        <td>
+                          <Link
+                            className="button button-small button-light"
+                            href={`/clinic/patients/${patient.clinic_patient_id}`}
+                          >
+                            Open
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import APIRouter, Depends, Request, Response
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -15,9 +15,12 @@ from app.auth import ApiError, get_current_user
 from app.authorization import require_role
 from app.db import get_session
 from app.models import (
+    Appointment,
     ClinicInvitation,
     ClinicLocation,
     ClinicPatient,
+    MedicalDocument,
+    MessageThread,
     PatientProfile,
     ProviderProfile,
     Tenant,
@@ -26,6 +29,7 @@ from app.models import (
 )
 from app.schemas import (
     ClinicOnboardingWrite,
+    ClinicPatientDetailRead,
     ClinicPatientRead,
     ClinicRead,
     InvitationAcceptWrite,
@@ -158,6 +162,69 @@ def list_clinic_patients(
         )
         for row in rows
     ]
+
+
+@router.get(
+    "/tenants/{tenant_id}/patients/{clinic_patient_id}",
+    response_model=ClinicPatientDetailRead,
+)
+def get_clinic_patient(
+    tenant_id: str,
+    clinic_patient_id: str,
+    response: Response,
+    membership: TenantMembership = Depends(require_role("tenant_admin", "staff")),
+    session: Session = Depends(get_session),
+) -> ClinicPatientDetailRead:
+    if membership.tenant_id != tenant_id:
+        raise ApiError("TENANT_NOT_FOUND", "Tenant not found.", 404)
+    row = session.execute(
+        select(ClinicPatient).where(
+            ClinicPatient.tenant_id == tenant_id,
+            ClinicPatient.id == clinic_patient_id,
+            ClinicPatient.status == "active",
+        )
+    ).scalar_one_or_none()
+    if row is None:
+        raise ApiError("PATIENT_NOT_FOUND", "Patient not found.", 404)
+
+    document_count = session.execute(
+        select(func.count())
+        .select_from(MedicalDocument)
+        .where(
+            MedicalDocument.tenant_id == tenant_id,
+            MedicalDocument.clinic_patient_id == row.id,
+            MedicalDocument.lifecycle_state != "deleted",
+        )
+    ).scalar_one()
+    open_thread_count = session.execute(
+        select(func.count())
+        .select_from(MessageThread)
+        .where(
+            MessageThread.tenant_id == tenant_id,
+            MessageThread.clinic_patient_id == row.id,
+            MessageThread.status == "open",
+        )
+    ).scalar_one()
+    upcoming_appointment_count = session.execute(
+        select(func.count())
+        .select_from(Appointment)
+        .where(
+            Appointment.tenant_id == tenant_id,
+            Appointment.clinic_patient_id == row.id,
+            Appointment.status == "booked",
+        )
+    ).scalar_one()
+
+    response.headers["Cache-Control"] = "no-store"
+    return ClinicPatientDetailRead(
+        clinic_patient_id=row.id,
+        chart_number=row.chart_number,
+        status=row.status,
+        created_at=row.created_at,
+        document_count=int(document_count or 0),
+        open_thread_count=int(open_thread_count or 0),
+        upcoming_appointment_count=int(upcoming_appointment_count or 0),
+    )
 
 
 @router.post(

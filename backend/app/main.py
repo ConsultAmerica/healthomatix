@@ -9,10 +9,12 @@ from fastapi.responses import JSONResponse
 
 from app.auth import ApiError
 from app.config import settings
+from app.document_routes import router as document_router
+from app.message_routes import router as message_router
+from app.platform_routes import router as platform_router
 from app.routes import router
 from app.scheduling_routes import router as scheduling_router
 from app.tenancy_routes import router as tenancy_router
-from app.platform_routes import router as platform_router
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("healthomatix")
@@ -68,5 +70,7 @@ async def api_error_handler(request: Request, error: ApiError) -> JSONResponse:
 
 app.include_router(router)
 app.include_router(tenancy_router)
+app.include_router(document_router)
+app.include_router(message_router)
 app.include_router(scheduling_router)
 app.include_router(platform_router)

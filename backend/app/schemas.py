@@ -110,6 +110,34 @@ class DocumentRead(StrictModel):
     size_bytes: int
     lifecycle_state: str
     created_at: datetime
+    clinic_patient_id: str | None = None
+
+
+class ThreadCreate(StrictModel):
+    subject: str = Field(min_length=2, max_length=200)
+    body: str = Field(min_length=1, max_length=4000)
+
+
+class MessageCreate(StrictModel):
+    body: str = Field(min_length=1, max_length=4000)
+
+
+class ThreadRead(StrictModel):
+    thread_id: str
+    clinic_patient_id: str
+    subject: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    message_count: int
+
+
+class MessageRead(StrictModel):
+    message_id: str
+    thread_id: str
+    sender_user_id: str
+    body: str
+    created_at: datetime
 
 
 class ClinicOnboardingWrite(StrictModel):
@@ -223,6 +251,14 @@ class ClinicPatientRead(StrictModel):
     chart_number: str | None
     status: str
     created_at: datetime
+
+
+class ClinicPatientDetailRead(ClinicPatientRead):
+    """Roster-safe detail. No chart PHI beyond clinic-assigned identifiers."""
+
+    document_count: int = 0
+    open_thread_count: int = 0
+    upcoming_appointment_count: int = 0
 
 
 class AvailabilityWrite(StrictModel):

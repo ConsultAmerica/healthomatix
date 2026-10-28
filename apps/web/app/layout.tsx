@@ -9,8 +9,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Healthomatix | Thoughtful care connections",
-  description: "A clinic and patient experience designed around clear workflows and privacy.",
+  title: "Healthomatix | Healthcare platform",
+  description: "A healthcare platform for clinics and patients—clear workflows, consent-aware views, and honest preview boundaries.",
 };
 
 export default function RootLayout({

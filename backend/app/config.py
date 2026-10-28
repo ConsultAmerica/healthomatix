@@ -53,6 +53,7 @@ class Settings:
     database_url: str
     environment: str
     scheduling_enabled: bool
+    document_storage_path: str
     oidc_issuer: str
     oidc_audience: str
     oidc_jwks_url: str
@@ -68,16 +69,25 @@ class Settings:
     def oidc_configured(self) -> bool:
         return bool(self.oidc_issuer and self.oidc_audience and self.oidc_jwks_url)
 
+    @property
+    def document_storage_configured(self) -> bool:
+        return bool(self.document_storage_path)
+
 
 def load_settings() -> Settings:
     environment = os.getenv("HEALTHOMATIX_ENV", "development").strip().lower()
-    scheduling_value = os.getenv("SCHEDULING_ENABLED", "false").strip().lower()
+    scheduling_default = "true" if environment == "development" else "false"
+    scheduling_value = os.getenv("SCHEDULING_ENABLED", scheduling_default).strip().lower()
     if scheduling_value not in {"true", "false", "1", "0", "yes", "no"}:
         raise ValueError("SCHEDULING_ENABLED must be a boolean value.")
+    document_storage_path = os.getenv("DOCUMENT_STORAGE_PATH", "").strip()
+    if not document_storage_path and environment == "development":
+        document_storage_path = "./.document-storage"
     return Settings(
         database_url=_database_url(),
         environment=environment,
         scheduling_enabled=scheduling_value in {"true", "1", "yes"},
+        document_storage_path=document_storage_path,
         oidc_issuer=os.getenv("OIDC_ISSUER", "").strip().rstrip("/"),
         oidc_audience=os.getenv("OIDC_AUDIENCE", "").strip(),
         oidc_jwks_url=os.getenv("OIDC_JWKS_URL", "").strip(),

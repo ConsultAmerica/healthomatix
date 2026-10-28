@@ -146,6 +146,8 @@ export function HeroStage() {
             aria-selected={i === index}
             aria-label={scene.alt}
             className={i === index ? "hero-scene-dot is-active" : "hero-scene-dot"}
+            // Browser tooling/extensions may inject attributes (e.g. data-cursor-ref) before hydrate.
+            suppressHydrationWarning
             onClick={() => {
               setPaused(true);
               setIndex(i);
