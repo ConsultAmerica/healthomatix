@@ -5,6 +5,8 @@ def test_openapi_includes_mounted_health_and_platform_contracts() -> None:
     paths = app.openapi()["paths"]
 
     assert "/api/v1/health" in paths
+    assert "/api/v1/health/live" in paths
+    assert "/api/v1/health/ready" in paths
     assert "/api/v1/me" in paths
     assert "/api/v1/platform/tenants" in paths
     assert "/api/v1/platform/support-access-requests" in paths

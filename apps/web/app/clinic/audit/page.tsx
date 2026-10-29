@@ -42,6 +42,35 @@ function Audit() {
         }
       />
 
+      <div className="audit-integrity" role="note">
+        <div>
+          <p className="section-kicker">Immutable trail</p>
+          <strong>Hash-chained audit events</strong>
+          <p>
+            Each write appends an event with actor, subject IDs, and request correlation. Clinical payloads are never
+            stored here—only references. In production this stream would be append-only and exportable for compliance
+            review.
+          </p>
+        </div>
+        <ol className="audit-chain" aria-label="Sample integrity chain">
+          <li>
+            <code>evt_a1…</code>
+            <span>consent.granted</span>
+            <em>prev: genesis</em>
+          </li>
+          <li>
+            <code>evt_b2…</code>
+            <span>invitation.created</span>
+            <em>prev: evt_a1…</em>
+          </li>
+          <li>
+            <code>evt_c3…</code>
+            <span>credential.reviewed</span>
+            <em>prev: evt_b2…</em>
+          </li>
+        </ol>
+      </div>
+
       <div className="toolbar">
         <label className="search-field">
           <span className="visually-hidden">Filter events</span>

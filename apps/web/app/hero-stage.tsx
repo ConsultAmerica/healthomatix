@@ -9,9 +9,9 @@ const scenes = [
     alt: "Clinician reviewing care details with a patient",
     tone: "teal",
     cards: [
-      { id: "clinic", label: "ClinicRead", value: "Northside Family Care", meta: "tenant · location · timezone", spot: "clinic" },
-      { id: "appt", label: "AppointmentRead", value: "Thu 10:30 · Dr. Patel", meta: "status: scheduled", spot: "appt" },
-      { id: "consent", label: "ConsentRead", value: "scope: visit_summary", meta: "policy v2.1 · granted", spot: "consent" },
+      { id: "clinic", label: "Clinic Information", value: "Northside Family Care", meta: "location · timezone", spot: "clinic" },
+      { id: "appt", label: "Appointments", value: "Thu 10:30 · Dr. Patel", meta: "status: scheduled", spot: "appt" },
+      { id: "consent", label: "Patient Consent", value: "visit summary shared", meta: "policy v2.1 · granted", spot: "consent" },
     ],
   },
   {
@@ -19,9 +19,9 @@ const scenes = [
     alt: "Care professional in a bright modern clinic",
     tone: "blue",
     cards: [
-      { id: "ready", label: "Readiness", value: "3 gates open", meta: "onboarding · team · schedule", spot: "clinic" },
-      { id: "cred", label: "CredentialRead", value: "2 pending review", meta: "clinic reviewer only", spot: "appt" },
-      { id: "member", label: "MemberRead", value: "12 care team seats", meta: "InvitationRead codes ready", spot: "consent" },
+      { id: "ready", label: "Clinic readiness", value: "3 gates open", meta: "onboarding · team · schedule", spot: "clinic" },
+      { id: "cred", label: "Provider Credentials", value: "2 pending review", meta: "clinic reviewer only", spot: "appt" },
+      { id: "member", label: "Care team", value: "12 seats active", meta: "secure invite codes ready", spot: "consent" },
     ],
   },
   {
@@ -29,9 +29,9 @@ const scenes = [
     alt: "Modern hospital corridor with natural light",
     tone: "cyan",
     cards: [
-      { id: "space", label: "LocationRead", value: "Main Street Clinic", meta: "timezone-aware rooms", spot: "clinic" },
-      { id: "avail", label: "AvailabilityRead", value: "8 open slots today", meta: "provider-bound", spot: "appt" },
-      { id: "invite", label: "InvitationRead", value: "single-use join codes", meta: "secure outside channel", spot: "consent" },
+      { id: "space", label: "Locations", value: "Main Street Clinic", meta: "timezone-aware rooms", spot: "clinic" },
+      { id: "avail", label: "Availability", value: "8 open slots today", meta: "provider-bound", spot: "appt" },
+      { id: "invite", label: "Invitations", value: "single-use join codes", meta: "secure outside channel", spot: "consent" },
     ],
   },
   {
@@ -39,9 +39,9 @@ const scenes = [
     alt: "Hands-on clinical care in a calm setting",
     tone: "mint",
     cards: [
-      { id: "patient", label: "PatientProfileRead", value: "•••••• · masked", meta: "sign-in required", spot: "clinic" },
-      { id: "visit", label: "AppointmentRead", value: "Next visit · Mon 14:00", meta: "timezone-aware", spot: "appt" },
-      { id: "scope", label: "ConsentRead", value: "care_coordination", meta: "scope trimmed at query time", spot: "consent" },
+      { id: "patient", label: "Patient Profile", value: "•••••• · masked", meta: "sign-in required", spot: "clinic" },
+      { id: "visit", label: "Appointments", value: "Next visit · Mon 14:00", meta: "timezone-aware", spot: "appt" },
+      { id: "scope", label: "Patient Consent", value: "care coordination", meta: "scope trimmed at query time", spot: "consent" },
     ],
   },
 ];
@@ -49,16 +49,21 @@ const scenes = [
 export function HeroStage() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [ready, setReady] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (paused) return;
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!ready || paused) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = window.setInterval(() => {
       setIndex((current) => (current + 1) % scenes.length);
     }, 5800);
     return () => window.clearInterval(id);
-  }, [paused]);
+  }, [paused, ready]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -123,7 +128,7 @@ export function HeroStage() {
         <div className="hero-photo-vignette" />
       </div>
 
-      <div className="hero-float-layer">
+      <div className="hero-float-layer hero-float-layer-desktop" aria-hidden="true">
         {active.cards.map((card, cardIndex) => (
           <article
             className={`hero-float-card float-${card.spot}`}
@@ -137,15 +142,31 @@ export function HeroStage() {
         ))}
       </div>
 
-      <div className="hero-scene-dots" role="tablist" aria-label="Hero scenes">
+      <div className="hero-card-stack" aria-label="Live-shaped API previews">
+        <p className="hero-card-stack-label">Live-shaped preview</p>
+        <ol className="hero-card-stack-list">
+          {active.cards.map((card, cardIndex) => (
+            <li key={`${index}-${card.id}-stack`}>
+              {cardIndex > 0 ? <span className="hero-card-connector" aria-hidden="true" /> : null}
+              <article className="hero-float-card hero-stack-card">
+                <span>{card.label}</span>
+                <strong>{card.value}</strong>
+                <small>{card.meta}</small>
+              </article>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div className="hero-scene-dots" role="tablist" aria-label="Hero scenes" suppressHydrationWarning>
         {scenes.map((scene, i) => (
           <button
             key={scene.src}
             type="button"
             role="tab"
-            aria-selected={i === index}
+            aria-selected={ready ? i === index : i === 0}
             aria-label={scene.alt}
-            className={i === index ? "hero-scene-dot is-active" : "hero-scene-dot"}
+            className={(ready ? i === index : i === 0) ? "hero-scene-dot is-active" : "hero-scene-dot"}
             // Browser tooling/extensions may inject attributes (e.g. data-cursor-ref) before hydrate.
             suppressHydrationWarning
             onClick={() => {

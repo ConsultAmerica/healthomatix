@@ -17,6 +17,7 @@ from app.config import settings
 from app.db import get_session
 from app.models import ClinicPatient, MedicalDocument, TenantMembership, User
 from app.schemas import DocumentRead
+from app.malware_port import build_malware_scanner
 from app.storage import (
     PrivateDocumentStorage,
     StorageUnavailable,
@@ -32,7 +33,7 @@ ALLOWED_CONTENT_TYPES = {
     "image/webp",
     "text/plain",
 }
-MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_UPLOAD_BYTES = int(getattr(settings, "document_max_upload_bytes", 10 * 1024 * 1024) or 10 * 1024 * 1024)
 SAFE_FILENAME = re.compile(r"[^A-Za-z0-9._\- ()\[\]]+")
 
 
@@ -44,7 +45,28 @@ def _request_id(request: Request) -> str:
     return getattr(request.state, "request_id", "")
 
 
-def _to_read(row: MedicalDocument) -> DocumentRead:
+def _sniff_content_type(payload: bytes, declared: str) -> str:
+    """Prefer file signatures over client-declared MIME types."""
+    if payload.startswith(b"%PDF"):
+        return "application/pdf"
+    if payload.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if payload.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if len(payload) >= 12 and payload[0:4] == b"RIFF" and payload[8:12] == b"WEBP":
+        return "image/webp"
+    # UTF-8 / ASCII text lab fixtures
+    try:
+        sample = payload[:4096].decode("utf-8")
+        if sample.isprintable() or "\n" in sample or "\t" in sample:
+            if declared == "text/plain" or declared not in ALLOWED_CONTENT_TYPES:
+                return "text/plain"
+    except UnicodeDecodeError:
+        pass
+    return declared
+
+
+def _to_read(row: MedicalDocument, *, processing_status: str | None = None, document_category: str | None = None) -> DocumentRead:
     return DocumentRead(
         document_id=row.id,
         original_filename=row.original_filename,
@@ -53,6 +75,8 @@ def _to_read(row: MedicalDocument) -> DocumentRead:
         lifecycle_state=row.lifecycle_state,
         created_at=row.created_at,
         clinic_patient_id=row.clinic_patient_id,
+        processing_status=processing_status,
+        document_category=document_category,
     )
 
 
@@ -80,7 +104,15 @@ async def upload_document(
         raise ApiError("TENANT_NOT_FOUND", "Tenant not found.", 404)
     clinic_patient = require_clinic_patient(session, tenant_id=tenant_id, user_id=user.id)
 
-    content_type = (file.content_type or "").split(";")[0].strip().lower()
+    declared = (file.content_type or "").split(";")[0].strip().lower()
+
+    payload = await file.read()
+    if not payload:
+        raise ApiError("DOCUMENT_EMPTY", "The uploaded file was empty.", 422)
+    if len(payload) > MAX_UPLOAD_BYTES:
+        raise ApiError("DOCUMENT_TOO_LARGE", "Files must be 10 MB or smaller.", 422)
+
+    content_type = _sniff_content_type(payload, declared)
     if content_type not in ALLOWED_CONTENT_TYPES:
         raise ApiError(
             "DOCUMENT_TYPE_UNSUPPORTED",
@@ -88,11 +120,31 @@ async def upload_document(
             422,
         )
 
-    payload = await file.read()
-    if not payload:
-        raise ApiError("DOCUMENT_EMPTY", "The uploaded file was empty.", 422)
-    if len(payload) > MAX_UPLOAD_BYTES:
-        raise ApiError("DOCUMENT_TOO_LARGE", "Files must be 10 MB or smaller.", 422)
+    scan = build_malware_scanner().scan(content=payload, content_type=content_type)
+    if scan.status == "infected":
+        raise ApiError("DOCUMENT_REJECTED", "The upload failed security screening.", 422)
+    if scan.status == "unavailable" and settings.document_require_malware_clear:
+        raise ApiError(
+            "DOCUMENT_SCAN_UNAVAILABLE",
+            "Secure malware scanning is required and is not configured.",
+            503,
+        )
+
+    digest = hashlib.sha256(payload).hexdigest()
+    duplicate = session.execute(
+        select(MedicalDocument).where(
+            MedicalDocument.tenant_id == tenant_id,
+            MedicalDocument.patient_user_id == user.id,
+            MedicalDocument.sha256 == digest,
+            MedicalDocument.lifecycle_state == "stored",
+        )
+    ).scalar_one_or_none()
+    if duplicate is not None:
+        raise ApiError(
+            "DOCUMENT_DUPLICATE",
+            "An identical document was already uploaded for this clinic record.",
+            409,
+        )
 
     document = MedicalDocument(
         tenant_id=tenant_id,
@@ -103,7 +155,7 @@ async def upload_document(
         original_filename=_sanitize_filename(file.filename or "document"),
         content_type=content_type,
         size_bytes=len(payload),
-        sha256=hashlib.sha256(payload).hexdigest(),
+        sha256=digest,
         lifecycle_state="reserved",
     )
     session.add(document)
@@ -124,6 +176,40 @@ async def upload_document(
     document.sha256 = stored.sha256
     document.size_bytes = stored.size_bytes
     document.lifecycle_state = "stored"
+
+    from app.fhir_store import create_resource, ensure_patient_for_user
+
+    ensure_patient_for_user(session, tenant_id=tenant_id, user_id=user.id)
+    doc_ref = create_resource(
+        session,
+        tenant_id=tenant_id,
+        resource_type="DocumentReference",
+        resource_id=document.id,
+        body={
+            "resourceType": "DocumentReference",
+            "status": "current",
+            "subject": {"reference": f"Patient/{user.id}"},
+            "date": document.created_at.isoformat(),
+            "content": [
+                {
+                    "attachment": {
+                        "contentType": document.content_type,
+                        "title": document.original_filename,
+                        "size": document.size_bytes,
+                        "hash": document.sha256,
+                        "url": f"urn:healthomatix:storage:{document.storage_key}",
+                    }
+                }
+            ],
+            "extension": [
+                {
+                    "url": "urn:healthomatix:medical-document-id",
+                    "valueString": document.id,
+                }
+            ],
+        },
+    )
+
     append_audit_event(
         session,
         actor_user_id=user.id,
@@ -134,7 +220,9 @@ async def upload_document(
         request_id=_request_id(request),
     )
     response.headers["Cache-Control"] = "no-store"
-    return _to_read(document)
+    read = _to_read(document)
+    read.document_reference_id = doc_ref["id"]
+    return read
 
 
 @router.get("/tenants/{tenant_id}/documents/{document_id}/content")
@@ -143,24 +231,42 @@ def download_document(
     document_id: str,
     request: Request,
     user: User = Depends(get_current_user),
-    membership: TenantMembership = Depends(require_role("patient")),
+    membership: TenantMembership = Depends(
+        require_role("patient", "tenant_admin", "staff", "provider")
+    ),
     session: Session = Depends(get_session),
     storage: PrivateDocumentStorage = Depends(get_private_storage),
 ) -> RawResponse:
     if membership.tenant_id != tenant_id:
         raise ApiError("TENANT_NOT_FOUND", "Tenant not found.", 404)
-    require_clinic_patient(session, tenant_id=tenant_id, user_id=user.id)
 
     document = session.execute(
         select(MedicalDocument).where(
             MedicalDocument.tenant_id == tenant_id,
             MedicalDocument.id == document_id,
-            MedicalDocument.patient_user_id == user.id,
             MedicalDocument.lifecycle_state == "stored",
         )
     ).scalar_one_or_none()
     if document is None:
         raise ApiError("DOCUMENT_NOT_FOUND", "Document not found.", 404)
+
+    if membership.role == "patient":
+        if document.patient_user_id != user.id:
+            raise ApiError("DOCUMENT_NOT_FOUND", "Document not found.", 404)
+        require_clinic_patient(session, tenant_id=tenant_id, user_id=user.id)
+    else:
+        from app.consent_gate import require_patient_consent
+
+        require_patient_consent(
+            session,
+            tenant_id=tenant_id,
+            patient_id=document.patient_user_id,
+            actor=user,
+            membership=membership,
+            request_id=_request_id(request),
+            subject_type="DocumentReference",
+            subject_id=document.id,
+        )
 
     try:
         content = storage.get(
@@ -191,6 +297,53 @@ def download_document(
     return RawResponse(content=content, media_type=document.content_type, headers=headers)
 
 
+@router.delete("/tenants/{tenant_id}/documents/{document_id}", status_code=204)
+def delete_document(
+    tenant_id: str,
+    document_id: str,
+    request: Request,
+    user: User = Depends(get_current_user),
+    membership: TenantMembership = Depends(require_role("patient")),
+    session: Session = Depends(get_session),
+    storage: PrivateDocumentStorage = Depends(get_private_storage),
+) -> Response:
+    if membership.tenant_id != tenant_id:
+        raise ApiError("TENANT_NOT_FOUND", "Tenant not found.", 404)
+    require_clinic_patient(session, tenant_id=tenant_id, user_id=user.id)
+    document = session.execute(
+        select(MedicalDocument).where(
+            MedicalDocument.tenant_id == tenant_id,
+            MedicalDocument.id == document_id,
+            MedicalDocument.patient_user_id == user.id,
+            MedicalDocument.lifecycle_state != "deleted",
+        )
+    ).scalar_one_or_none()
+    if document is None:
+        raise ApiError("DOCUMENT_NOT_FOUND", "Document not found.", 404)
+
+    if document.lifecycle_state == "stored":
+        try:
+            storage.delete(
+                tenant_id=tenant_id,
+                document_id=document.id,
+                key=document.storage_key,
+            )
+        except StorageUnavailable:
+            # Soft-delete metadata even if the object store is unavailable.
+            pass
+    document.lifecycle_state = "deleted"
+    append_audit_event(
+        session,
+        actor_user_id=user.id,
+        tenant_id=tenant_id,
+        action="document.deleted",
+        subject_type="medical_document",
+        subject_id=document.id,
+        request_id=_request_id(request),
+    )
+    return Response(status_code=204, headers={"Cache-Control": "no-store"})
+
+
 @router.get(
     "/tenants/{tenant_id}/patients/{clinic_patient_id}/documents",
     response_model=list[DocumentRead],
@@ -198,8 +351,10 @@ def download_document(
 def list_patient_documents_for_clinic(
     tenant_id: str,
     clinic_patient_id: str,
+    request: Request,
     response: Response,
-    membership: TenantMembership = Depends(require_role("tenant_admin", "staff")),
+    user: User = Depends(get_current_user),
+    membership: TenantMembership = Depends(require_role("tenant_admin", "staff", "provider")),
     session: Session = Depends(get_session),
 ) -> list[DocumentRead]:
     if membership.tenant_id != tenant_id:
@@ -213,6 +368,19 @@ def list_patient_documents_for_clinic(
     ).scalar_one_or_none()
     if clinic_patient is None:
         raise ApiError("PATIENT_NOT_FOUND", "Patient not found.", 404)
+
+    from app.consent_gate import require_patient_consent
+
+    require_patient_consent(
+        session,
+        tenant_id=tenant_id,
+        patient_id=clinic_patient.patient_user_id,
+        actor=user,
+        membership=membership,
+        request_id=_request_id(request),
+        subject_type="ClinicPatient",
+        subject_id=clinic_patient_id,
+    )
 
     response.headers["Cache-Control"] = "no-store"
     rows = session.execute(

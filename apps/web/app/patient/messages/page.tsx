@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useActiveMembership } from "@/components/portal/portal-context";
+import { ROLE_LABELS, useActiveMembership, usePortal } from "@/components/portal/portal-context";
 import {
   EmptyState,
   FormError,
+  Notice,
   PageHeader,
   QueryView,
+  SearchField,
   Section,
 } from "@/components/ui";
 import { api, call, useApiQuery, type ApiProblem, type Schemas } from "@/lib/api";
@@ -15,14 +17,23 @@ import { formatDate } from "@/lib/time";
 type Thread = Schemas["ThreadRead"];
 type Message = Schemas["MessageRead"];
 
+function senderLabel(message: Message, myUserId: string | null) {
+  if (myUserId && message.sender_user_id === myUserId) return "You";
+  if (message.sender_role === "patient") return "Patient";
+  return ROLE_LABELS[message.sender_role ?? ""] ?? "Clinic team";
+}
+
 export default function MessagesPage() {
   const { tenant_id, tenant_name } = useActiveMembership();
+  const { state: portalState } = usePortal();
+  const myUserId = portalState.status === "ready" ? portalState.user.user_id : null;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [reply, setReply] = useState("");
   const [pending, setPending] = useState(false);
   const [problem, setProblem] = useState<ApiProblem | null>(null);
+  const [threadQuery, setThreadQuery] = useState("");
 
   const threads = useApiQuery(`threads:${tenant_id}`, () =>
     call(api().GET("/api/v1/tenants/{tenant_id}/threads", { params: { path: { tenant_id } } })),
@@ -77,6 +88,23 @@ export default function MessagesPage() {
     threads.reload();
   }
 
+  async function closeThread() {
+    if (!selectedId) return;
+    setPending(true);
+    setProblem(null);
+    const result = await call(
+      api().POST("/api/v1/tenants/{tenant_id}/threads/{thread_id}/close", {
+        params: { path: { tenant_id, thread_id: selectedId } },
+      }),
+    );
+    setPending(false);
+    if (!result.ok) {
+      setProblem(result.problem);
+      return;
+    }
+    threads.reload();
+  }
+
   return (
     <>
       <PageHeader
@@ -85,15 +113,31 @@ export default function MessagesPage() {
         description={`Message your care team at ${tenant_name}.`}
       />
 
+      <Notice title="Not for emergencies" tone="warning">
+        Routine portal messaging is not monitored for urgent medical needs. Call emergency services or
+        your clinic by phone if you need immediate help. No autonomous AI medical replies are sent from
+        this inbox.
+      </Notice>
+
       {problem ? <FormError problem={problem} /> : null}
 
       <div className="split-panels">
         <Section title="Conversations">
+          <SearchField
+            label="Search conversations"
+            value={threadQuery}
+            onChange={setThreadQuery}
+            placeholder="Search by subject…"
+          />
           <QueryView state={threads.state} onRetry={threads.reload} rows={4} loadingLabel="Loading messages">
-            {(items: Thread[]) =>
-              items.length ? (
-                <ul className="thread-list">
-                  {items.map((thread) => (
+            {(items: Thread[]) => {
+              const needle = threadQuery.trim().toLowerCase();
+              const filtered = items.filter(
+                (thread) => !needle || (thread.subject || "").toLowerCase().includes(needle),
+              );
+              return filtered.length ? (
+                <ul className="thread-list" style={{ marginTop: 12 }}>
+                  {filtered.map((thread) => (
                     <li key={thread.thread_id}>
                       <button
                         type="button"
@@ -109,12 +153,14 @@ export default function MessagesPage() {
                     </li>
                   ))}
                 </ul>
+              ) : items.length ? (
+                <EmptyState title="No matching conversations" />
               ) : (
                 <EmptyState title="No conversations yet">
                   Start a thread below to reach your clinic.
                 </EmptyState>
-              )
-            }
+              );
+            }}
           </QueryView>
 
           <form
@@ -165,7 +211,7 @@ export default function MessagesPage() {
                     {items.map((message) => (
                       <li key={message.message_id} className="message-item">
                         <header>
-                          <span className="mono">{message.sender_user_id.slice(0, 8)}</span>
+                          <span>{senderLabel(message, myUserId)}</span>
                           <time dateTime={message.created_at}>{formatDate(message.created_at)}</time>
                         </header>
                         <p>{message.body}</p>
@@ -174,6 +220,11 @@ export default function MessagesPage() {
                   </ul>
                 )}
               </QueryView>
+              <div className="row-actions" style={{ marginBottom: 12 }}>
+                <button className="button button-small button-light" type="button" disabled={pending} onClick={() => void closeThread()}>
+                  Close thread
+                </button>
+              </div>
               <form
                 className="stack-form"
                 onSubmit={(event) => {

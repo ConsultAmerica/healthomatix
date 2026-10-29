@@ -83,6 +83,9 @@ function Locations() {
                 <tr>
                   <th scope="col">Name</th>
                   <th scope="col">Time zone</th>
+                  <th scope="col">
+                    <span className="visually-hidden">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -92,6 +95,29 @@ function Locations() {
                       <strong className="cell-title">{item.name}</strong>
                     </td>
                     <td>{timeZoneLabel(item.timezone)}</td>
+                    <td>
+                      {isAdmin ? (
+                        <button
+                          className="button button-small button-light"
+                          type="button"
+                          onClick={async () => {
+                            const result = await call(
+                              api().POST("/api/v1/tenants/{tenant_id}/locations/{location_id}/deactivate", {
+                                params: { path: { tenant_id, location_id: item.location_id } },
+                              }),
+                            );
+                            if (result.ok) {
+                              notify(`${item.name} deactivated.`);
+                              reload();
+                            } else {
+                              notify(result.problem.message);
+                            }
+                          }}
+                        >
+                          Deactivate
+                        </button>
+                      ) : null}
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -81,6 +81,9 @@ function Team() {
                     <th scope="col">Role</th>
                     <th scope="col">Status</th>
                     <th scope="col">Since</th>
+                    <th scope="col">
+                      <span className="visually-hidden">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -106,6 +109,29 @@ function Team() {
                         <StatusBadge status={member.status} />
                       </td>
                       <td>{formatDate(member.created_at)}</td>
+                      <td>
+                        {member.user_id !== myUserId && member.status === "active" ? (
+                          <button
+                            className="button button-small button-light"
+                            type="button"
+                            onClick={async () => {
+                              const result = await call(
+                                api().POST("/api/v1/tenants/{tenant_id}/members/{user_id}/deactivate", {
+                                  params: { path: { tenant_id, user_id: member.user_id } },
+                                }),
+                              );
+                              if (result.ok) {
+                                notify("Member deactivated.");
+                                members.reload();
+                              } else {
+                                notify(result.problem.message);
+                              }
+                            }}
+                          >
+                            Deactivate
+                          </button>
+                        ) : null}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

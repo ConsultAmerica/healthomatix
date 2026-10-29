@@ -67,8 +67,80 @@ export function Section({
   );
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`app-card ${className}`}>{children}</div>;
+export function Card({
+  children,
+  className = "",
+  padding = "default",
+}: {
+  children: ReactNode;
+  className?: string;
+  padding?: "default" | "compact" | "none";
+}) {
+  return <div className={`app-card app-card-${padding} ${className}`.trim()}>{children}</div>;
+}
+
+export function Breadcrumbs({
+  items,
+}: {
+  items: Array<{ label: string; href?: string }>;
+}) {
+  return (
+    <nav className="breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        {items.map((item, index) => {
+          const last = index === items.length - 1;
+          return (
+            <li key={`${item.label}-${index}`}>
+              {item.href && !last ? <Link href={item.href}>{item.label}</Link> : <span aria-current={last ? "page" : undefined}>{item.label}</span>}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
+export function SearchField({
+  label = "Search",
+  value,
+  onChange,
+  placeholder = "Search…",
+  id,
+}: {
+  label?: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  id?: string;
+}) {
+  const generated = useId();
+  const fieldId = id ?? generated;
+  return (
+    <div className="search-field">
+      <label className="visually-hidden" htmlFor={fieldId}>
+        {label}
+      </label>
+      <span className="search-field-icon" aria-hidden="true">
+        <Icon name="file" size={16} />
+      </span>
+      <input
+        id={fieldId}
+        type="search"
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        autoComplete="off"
+      />
+    </div>
+  );
+}
+
+export function DashboardGrid({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <div className={`dashboard-grid ${className}`.trim()}>{children}</div>;
+}
+
+export function Skeleton({ className = "", width }: { className?: string; width?: string }) {
+  return <span className={`skeleton-block ${className}`.trim()} style={width ? { width } : undefined} aria-hidden="true" />;
 }
 
 export function StatTile({
@@ -391,6 +463,15 @@ export function Dialog({
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   return (
     <dialog
       ref={ref}
@@ -412,6 +493,47 @@ export function Dialog({
         {open && children}
       </div>
     </dialog>
+  );
+}
+
+export function ConfirmDialog({
+  open,
+  onClose,
+  onConfirm,
+  title,
+  description,
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
+  danger = false,
+  pending = false,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description?: ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  danger?: boolean;
+  pending?: boolean;
+}) {
+  return (
+    <Dialog open={open} onClose={onClose} title={title} description={description}>
+      <div className="dialog-actions">
+        <button className="button button-light button-small" type="button" onClick={onClose} disabled={pending}>
+          {cancelLabel}
+        </button>
+        <button
+          className={`button button-small${danger ? " button-danger" : ""}`}
+          type="button"
+          onClick={onConfirm}
+          disabled={pending}
+          aria-busy={pending}
+        >
+          {pending ? "Working…" : confirmLabel}
+        </button>
+      </div>
+    </Dialog>
   );
 }
 

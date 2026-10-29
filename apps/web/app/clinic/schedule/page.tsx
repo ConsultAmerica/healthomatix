@@ -3,9 +3,11 @@
 import { useMemo, useState } from "react";
 import { RoleGate } from "@/components/portal/portal-shell";
 import { useActiveMembership, usePortal } from "@/components/portal/portal-context";
-import { EmptyState, Notice, PageHeader, QueryView } from "@/components/ui";
+import { EmptyState, Notice, PageHeader, QueryView, useToast } from "@/components/ui";
 import { api, call, useApiQuery } from "@/lib/api";
+import { apiJson } from "@/lib/fhir";
 import { addDays, dayKey, formatDate, formatTime, shortId, startOfWeek } from "@/lib/time";
+import { useRouter } from "next/navigation";
 
 export default function SchedulePage() {
   return (
@@ -18,11 +20,29 @@ export default function SchedulePage() {
 function Schedule() {
   const membership = useActiveMembership();
   const { features } = usePortal();
+  const notify = useToast();
+  const router = useRouter();
   const tenant_id = membership.tenant_id;
   const isProvider = membership.role === "provider";
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const weekEnd = addDays(weekStart, 7);
   const scheduling = features?.schedulingEnabled ?? false;
+
+  async function openVisit(appointmentId: string, existingSessionId?: string | null) {
+    if (existingSessionId) {
+      router.push(`/clinic/visits/${existingSessionId}`);
+      return;
+    }
+    const created = await apiJson<{ session_id: string }>(
+      `/api/v1/tenants/${tenant_id}/sessions`,
+      { method: "POST", body: JSON.stringify({ appointment_id: appointmentId }) },
+    );
+    if (!created.ok) {
+      notify(created.problem.message);
+      return;
+    }
+    router.push(`/clinic/visits/${created.data.session_id}`);
+  }
 
   const { state, reload } = useApiQuery(scheduling ? `schedule:${tenant_id}:${weekStart.toISOString()}` : null, () =>
     call(
@@ -94,7 +114,7 @@ function Schedule() {
                           aria-label={formatDate(day.toISOString())}
                         >
                           <h3 className="calendar-day-heading">
-                            <span>{new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(day)}</span>
+                            <span>{new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(day)}</span>
                             <strong>{day.getDate()}</strong>
                           </h3>
                           {items.length ? (
@@ -108,6 +128,46 @@ function Schedule() {
                                   <strong>{appointment.provider_name || "Clinic provider"}</strong>
                                   <span>{appointment.location_name}</span>
                                   {!isProvider && <span className="mono">Patient {shortId(appointment.clinic_patient_id)}</span>}
+                                  {appointment.status === "booked" ? (
+                                    <div className="row-actions">
+                                      <button
+                                        className="button button-small"
+                                        type="button"
+                                        onClick={() =>
+                                          void openVisit(
+                                            appointment.appointment_id,
+                                            (appointment as { session_id?: string | null }).session_id,
+                                          )
+                                        }
+                                      >
+                                        Open visit
+                                      </button>
+                                      <button
+                                        className="button button-small button-light"
+                                        type="button"
+                                        onClick={async () => {
+                                          const result = await call(
+                                            api().POST("/api/v1/tenants/{tenant_id}/appointments/{appointment_id}/cancel", {
+                                              params: {
+                                                path: {
+                                                  tenant_id,
+                                                  appointment_id: appointment.appointment_id,
+                                                },
+                                              },
+                                            }),
+                                          );
+                                          if (result.ok) {
+                                            notify("Appointment cancelled.");
+                                            reload();
+                                          } else {
+                                            notify(result.problem.message);
+                                          }
+                                        }}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  ) : null}
                                 </li>
                               ))}
                             </ul>

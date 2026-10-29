@@ -243,6 +243,32 @@ function Availability() {
                                 <span>{slot.location_name}</span>
                               </span>
                               <StatusBadge status={slot.status} />
+                              {slot.status === "open" ? (
+                                <button
+                                  className="button button-small button-light"
+                                  type="button"
+                                  onClick={async () => {
+                                    const result = await call(
+                                      api().DELETE(
+                                        "/api/v1/tenants/{tenant_id}/providers/me/availability/{availability_id}",
+                                        {
+                                          params: {
+                                            path: { tenant_id, availability_id: slot.availability_id },
+                                          },
+                                        },
+                                      ),
+                                    );
+                                    if (result.ok) {
+                                      notify("Slot withdrawn.");
+                                      slots.reload();
+                                    } else {
+                                      notify(result.problem.message);
+                                    }
+                                  }}
+                                >
+                                  Withdraw
+                                </button>
+                              ) : null}
                             </li>
                           ))}
                         </ul>

@@ -19,36 +19,36 @@ const tabs: Array<{
   {
     id: "clinic",
     label: "Clinic workspace",
-    title: "Fuel care teams with a workspace grounded in real clinic objects",
-    body: "Seamlessly organize ClinicRead, MemberRead, LocationRead, and CredentialRead in one readiness-aware surface. Onboarding, invitations, and scheduling gates stay explicit—so teams know what is ready and what still needs secure access.",
-    objects: ["ClinicRead", "MemberRead", "LocationRead", "CredentialRead", "InvitationRead"],
+    title: "Manage your clinic with one readiness-aware workspace",
+    body: "Organize clinic information, care team seats, locations, and provider credentials in one place. Onboarding, invitations, and scheduling gates stay explicit—so teams know what is ready and what still needs secure access.",
+    objects: ["Clinic Information", "Care Team", "Locations", "Provider Credentials", "Invitations"],
     points: ["Scheduling gates", "Team workflows", "Credential review", "Readiness views"],
     href: "/clinic",
-    cta: "Open clinic preview",
+    cta: "Explore clinic demo",
     mock: "clinic-workspace",
     tone: "mint",
   },
   {
     id: "patient",
     label: "Patient portal",
-    title: "Deliver calm patient experiences with consent-aware data",
-    body: "PatientProfileRead stays masked until identity is ready. AppointmentRead timelines and ConsentRead scopes give patients a clear picture of visits and permissions—without inventing live chart access.",
-    objects: ["PatientProfileRead", "AppointmentRead", "ConsentRead", "DocumentRead"],
+    title: "Connect patients with calm, consent-aware experiences",
+    body: "Patient profiles stay masked until identity is ready. Appointment timelines and consent scopes give patients a clear picture of visits and permissions—without inventing live chart access.",
+    objects: ["Patient Profile", "Appointments", "Patient Consent", "Medical Records"],
     points: ["Visit overview", "Masked profiles", "Consent scopes", "Family-friendly tone"],
     href: "/patient",
-    cta: "Open patient preview",
+    cta: "Explore patient demo",
     mock: "patient-portal",
     tone: "blue",
   },
   {
     id: "schedule",
     label: "Scheduling board",
-    title: "Turn AvailabilityRead slots into trustworthy AppointmentRead visits",
-    body: "Open slots, booked visits, and AppointmentCreate payloads share one board. Idempotency keys and provider/location bindings keep scheduling honest—writes stay gated until authentication is configured.",
-    objects: ["AvailabilityRead", "AppointmentRead", "AppointmentCreate", "LocationRead"],
+    title: "Turn open slots into trustworthy appointments",
+    body: "Open slots, booked visits, and booking requests share one board. Idempotency keys and provider/location bindings keep scheduling honest—writes stay gated until authentication is configured.",
+    objects: ["Availability", "Appointments", "Booking requests", "Locations"],
     points: ["Open slots", "Confirmed visits", "Idempotent booking", "Timezone-aware"],
-    href: "/clinic#schedule",
-    cta: "See scheduling gates",
+    href: "/clinic",
+    cta: "See scheduling",
     mock: "scheduling",
     tone: "mint",
   },
@@ -56,10 +56,10 @@ const tabs: Array<{
     id: "credentials",
     label: "Credential review",
     title: "Keep provider credentials reviewed—never self-verified",
-    body: "CredentialRead rows track type, jurisdiction, regulator, and status. CredentialReview decisions belong to clinic reviewers only, creating a hard scheduling gate before AvailabilityWrite is allowed.",
-    objects: ["CredentialRead", "CredentialWrite", "CredentialReview"],
+    body: "Credential records track type, jurisdiction, regulator, and status. Review decisions belong to clinic reviewers only, creating a hard scheduling gate before availability can be published.",
+    objects: ["Provider Credentials", "Credential submissions", "Review decisions"],
     points: ["Submitted → reviewed", "Jurisdiction aware", "Clinic-only decisions"],
-    href: "/clinic#providers",
+    href: "/clinic",
     cta: "Review credential flow",
     mock: "credentials",
     tone: "ink",
@@ -68,11 +68,11 @@ const tabs: Array<{
     id: "privacy",
     label: "Privacy & consent",
     title: "Honor access with consent scopes and honest preview limits",
-    body: "ConsentRead captures purpose, scope, policy version, and withdrawal. DocumentRead and PatientProfileRead respect those boundaries. Previews show the control plane—not fabricated PHI.",
-    objects: ["ConsentRead", "ConsentWrite", "DocumentRead", "PatientProfileRead"],
+    body: "Consent captures purpose, scope, policy version, and withdrawal. Documents and patient profiles respect those boundaries. Previews show the control plane—not fabricated PHI.",
+    objects: ["Patient Consent", "Consent updates", "Medical Records", "Patient Profile"],
     points: ["Purpose + scope", "Policy versions", "Withdrawal ready", "No false live care"],
     href: "#objects",
-    cta: "Inspect privacy objects",
+    cta: "Inspect privacy controls",
     mock: "privacy-consent",
     tone: "blue",
   },
@@ -103,29 +103,16 @@ export function FeatureTabs() {
     setActiveId(id);
   }
 
-  function move(delta: number) {
-    setAuto(false);
-    const next = (activeIndex + delta + tabs.length) % tabs.length;
-    setActiveId(tabs[next].id);
-  }
-
   return (
     <div
-      className="feature-tabs"
+      className="feature-tabs feature-tabs-vertical"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="feature-tabs-bar">
-        <div className="feature-tabs-controls">
-          <button type="button" className="tab-nav-btn" onClick={() => move(-1)} aria-label="Previous feature">
-            ←
-          </button>
-          <button type="button" className="tab-nav-btn" onClick={() => move(1)} aria-label="Next feature">
-            →
-          </button>
-        </div>
-        <div className="feature-tabs-list" role="tablist" aria-label="Platform features">
-          {tabs.map((tab) => (
+      <nav className="feature-tabs-rail" aria-label="Platform features">
+        <p className="feature-tabs-rail-label">Capabilities</p>
+        <div className="feature-tabs-list" role="tablist" aria-orientation="vertical">
+          {tabs.map((tab, index) => (
             <button
               key={tab.id}
               type="button"
@@ -136,7 +123,10 @@ export function FeatureTabs() {
               className={`feature-tab${tab.id === activeId ? " is-active" : ""}`}
               onClick={() => select(tab.id)}
             >
-              {tab.label}
+              <span className="feature-tab-num" aria-hidden="true">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="feature-tab-label">{tab.label}</span>
               {tab.id === activeId && rotating ? (
                 <span className="feature-tab-progress" aria-hidden="true">
                   <i key={activeId} />
@@ -145,7 +135,7 @@ export function FeatureTabs() {
             </button>
           ))}
         </div>
-      </div>
+      </nav>
 
       <div
         className="feature-tab-layout"
@@ -162,7 +152,7 @@ export function FeatureTabs() {
           <p>{active.body}</p>
           <div className="feature-object-row">
             {active.objects.map((object) => (
-              <code key={object}>{object}</code>
+              <span key={object} className="feature-chip">{object}</span>
             ))}
           </div>
           <ul className="feature-point-list">

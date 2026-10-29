@@ -48,6 +48,16 @@ def _demo_auth_secret(environment: str) -> str:
     return secret
 
 
+def _bool_env(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        return default
+    value = raw.strip().lower()
+    if value not in {"true", "false", "1", "0", "yes", "no"}:
+        raise ValueError(f"{name} must be a boolean value.")
+    return value in {"true", "1", "yes"}
+
+
 @dataclass(frozen=True)
 class Settings:
     database_url: str
@@ -60,6 +70,11 @@ class Settings:
     cors_origins: tuple[str, ...]
     platform_admin_identities: tuple[tuple[str, str], ...]
     demo_auth_secret: str = ""
+    require_mfa_for_platform_admin: bool = False
+    api_rate_limit_enabled: bool = True
+    api_rate_limit_per_minute: int = 120
+    document_require_malware_clear: bool = False
+    launch_mode: str = "development"  # development | staging | pilot | production
 
     @property
     def demo_auth_enabled(self) -> bool:
@@ -83,6 +98,12 @@ def load_settings() -> Settings:
     document_storage_path = os.getenv("DOCUMENT_STORAGE_PATH", "").strip()
     if not document_storage_path and environment == "development":
         document_storage_path = "./.document-storage"
+    launch_mode = os.getenv("LAUNCH_MODE", environment).strip().lower() or environment
+    if launch_mode not in {"development", "staging", "pilot", "production"}:
+        raise ValueError("LAUNCH_MODE must be development, staging, pilot, or production.")
+    rate_limit = int(os.getenv("API_RATE_LIMIT_PER_MINUTE", "120") or "120")
+    if rate_limit < 10 or rate_limit > 10000:
+        raise ValueError("API_RATE_LIMIT_PER_MINUTE must be between 10 and 10000.")
     return Settings(
         database_url=_database_url(),
         environment=environment,
@@ -101,6 +122,15 @@ def load_settings() -> Settings:
             os.getenv("PLATFORM_ADMIN_IDENTITIES", "")
         ),
         demo_auth_secret=_demo_auth_secret(environment),
+        require_mfa_for_platform_admin=_bool_env(
+            "REQUIRE_MFA_FOR_PLATFORM_ADMIN", environment == "production"
+        ),
+        api_rate_limit_enabled=_bool_env("API_RATE_LIMIT_ENABLED", True),
+        api_rate_limit_per_minute=rate_limit,
+        document_require_malware_clear=_bool_env(
+            "DOCUMENT_REQUIRE_MALWARE_CLEAR", environment == "production"
+        ),
+        launch_mode=launch_mode,
     )
 
 

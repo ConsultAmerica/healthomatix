@@ -16,52 +16,52 @@ const items: Array<{
 }> = [
   {
     id: "clinic",
-    title: "Activate clinic workflows across your care team",
+    title: "Manage Your Clinic",
     summary:
-      "Spin up a clinic workspace with onboarding, memberships, credential review, and readiness checks—shaped around how care teams actually operate.",
+      "Spin up a clinic workspace with onboarding, team invites, credential review, and readiness checks—shaped around how care teams actually operate.",
     detail:
-      "Behind the preview sits a ClinicRead object with tenant, location, timezone, and role. Team invites use InvitationRead codes; patient charts stay unavailable until secure sign-in is configured.",
+      "Invite staff, verify provider credentials, and see what is ready to schedule. Patient charts stay unavailable until secure sign-in and consent are in place.",
     bullets: [
-      "ClinicOnboardingWrite → ClinicRead",
-      "MemberRead + InvitationRead",
-      "CredentialRead review gates",
+      "Clinic information & locations",
+      "Team invitations",
+      "Provider credential review",
     ],
     href: "/clinic",
-    linkLabel: "Explore clinic preview",
+    linkLabel: "Explore clinic demo",
     mock: "clinic-workspace",
     tone: "mint",
   },
   {
     id: "patient",
-    title: "Keep patients connected without exposing live charts",
+    title: "Connect With Your Patients",
     summary:
-      "Give patients a calmer portal for visits, updates, and consent-aware summaries—built around clarity, trust, and respectful privacy defaults.",
+      "Give patients a calmer portal for visits, documents, and consent-aware summaries—built around clarity, trust, and respectful privacy defaults.",
     detail:
-      "PatientProfileRead fields stay masked in preview. AppointmentRead slots and ConsentRead scopes show structure without implying clinical access to real records.",
+      "Patients see appointments, upload records, and control what the clinic can access. Previews stay honest—no invented live chart access.",
     bullets: [
-      "PatientProfileRead (masked)",
-      "AppointmentRead timeline",
-      "ConsentRead purpose + scope",
+      "Appointments & visit overview",
+      "Medical records upload",
+      "Patient consent controls",
     ],
     href: "/patient",
-    linkLabel: "Explore patient preview",
+    linkLabel: "Explore patient demo",
     mock: "patient-portal",
     tone: "blue",
   },
   {
     id: "privacy",
-    title: "Enterprise-minded privacy, identity, and readiness",
+    title: "Privacy and readiness you can show",
     summary:
       "Every sensitive surface respects access boundaries. Notices, readiness states, and consent scopes make limitations obvious—never look like live care when they are not.",
     detail:
-      "ConsentRead, DocumentRead, and CredentialRead each carry explicit access rules. Previews trim what is unavailable instead of inventing live data.",
+      "Consent, documents, and credentials each carry explicit access rules. Previews trim what is unavailable instead of inventing live data.",
     bullets: [
-      "ConsentRead policy versions",
-      "DocumentRead consent-scoped",
+      "Consent purpose & scope",
+      "Consent-scoped documents",
       "No false live patient data",
     ],
     href: "#objects",
-    linkLabel: "Inspect platform objects",
+    linkLabel: "Browse developer schemas",
     mock: "privacy-consent",
     tone: "blue",
   },
@@ -107,7 +107,7 @@ export function FeatureAccordion() {
                   <p className="feature-accordion-detail">{item.detail}</p>
                   <ul className="feature-object-chips">
                     {item.bullets.map((bullet) => (
-                      <li key={bullet}><code>{bullet}</code></li>
+                      <li key={bullet}><span>{bullet}</span></li>
                     ))}
                   </ul>
                   <a className="text-arrow-link" href={item.href}>

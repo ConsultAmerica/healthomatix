@@ -60,13 +60,33 @@ def health() -> dict[str, str]:
     return {"status": "ok", "service": "healthomatix-api"}
 
 
+@router.get("/health/live")
+def health_live() -> dict[str, str]:
+    """Process liveness — no dependency details."""
+    return {"status": "alive"}
+
+
+@router.get("/health/ready")
+def health_ready(session: Session = Depends(get_session)) -> dict[str, str]:
+    """Readiness — verifies DB connectivity without exposing connection strings."""
+    try:
+        session.execute(select(1))
+    except Exception as error:
+        raise ApiError("NOT_READY", "Service dependencies are not ready.", 503) from error
+    return {"status": "ready"}
+
+
 @router.get("/auth/config")
-def auth_config() -> dict[str, bool]:
+def auth_config() -> dict[str, object]:
     return {
         "oidc_configured": settings.oidc_configured,
         "scheduling_enabled": settings.scheduling_enabled,
         "document_storage_configured": settings.document_storage_configured,
         "demo_auth_enabled": settings.demo_auth_enabled,
+        "require_mfa_for_platform_admin": settings.require_mfa_for_platform_admin,
+        "api_rate_limit_enabled": settings.api_rate_limit_enabled,
+        "launch_mode": settings.launch_mode,
+        "document_require_malware_clear": settings.document_require_malware_clear,
     }
 
 
@@ -477,6 +497,11 @@ def grant_consent(
     with session.begin_nested():
         session.add(consent)
         session.flush()
+        from app.consent_gate import sync_fhir_consent_from_grant
+        from app.fhir_store import ensure_patient_for_user
+
+        ensure_patient_for_user(session, tenant_id=tenant_id, user_id=user.id)
+        sync_fhir_consent_from_grant(session, tenant_id=tenant_id, grant=consent)
         append_audit_event(
             session,
             actor_user_id=user.id,
@@ -535,6 +560,9 @@ def withdraw_consent(
         )
         session.add(withdrawal)
         session.flush()
+        from app.consent_gate import inactivate_fhir_consent
+
+        inactivate_fhir_consent(session, tenant_id=tenant_id, grant_id=consent.id)
         append_audit_event(
             session,
             actor_user_id=user.id,

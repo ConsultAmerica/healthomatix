@@ -5,7 +5,7 @@ import { useState } from "react";
 import { AppointmentItem } from "@/components/appointments";
 import { SlotPicker, type Slot } from "@/components/patient/slot-picker";
 import { useActiveMembership, usePortal } from "@/components/portal/portal-context";
-import { Dialog, EmptyState, FormError, Notice, PageHeader, QueryView, Section, useToast } from "@/components/ui";
+import { Dialog, EmptyState, FormError, Notice, PageHeader, QueryView, SearchField, Section, useToast } from "@/components/ui";
 import { api, call, useApiQuery, type ApiProblem, type Schemas } from "@/lib/api";
 import { formatDateTime, isFuture } from "@/lib/time";
 
@@ -28,6 +28,7 @@ export default function AppointmentsPage() {
   const [pending, setPending] = useState(false);
   const [problem, setProblem] = useState<ApiProblem | null>(null);
   const [slotReload, setSlotReload] = useState(0);
+  const [query, setQuery] = useState("");
 
   async function cancel() {
     if (!cancelling) return;
@@ -93,19 +94,39 @@ export default function AppointmentsPage() {
         title="Your appointments"
         description={`Visits you've booked with ${tenant_name}.`}
         actions={
-          <Link className="button button-small" href="/patient/care">
-            Book an appointment
-          </Link>
+          <div className="row-actions">
+            <Link className="button button-small button-light" href="/patient/waiting-room">
+              Waiting room
+            </Link>
+            <Link className="button button-small" href="/patient/care">
+              Book an appointment
+            </Link>
+          </div>
         }
+      />
+
+      <SearchField
+        label="Search appointments"
+        value={query}
+        onChange={setQuery}
+        placeholder="Search by provider, location, or status…"
       />
 
       <QueryView state={state} onRetry={reload} rows={3} loadingLabel="Loading appointments">
         {(appointments) => {
+          const needle = query.trim().toLowerCase();
+          const matches = (item: Appointment) =>
+            !needle ||
+            `${item.provider_name || ""} ${item.location_name || ""} ${item.status}`
+              .toLowerCase()
+              .includes(needle);
           const upcoming = appointments
             .filter((item) => item.status === "booked" && isFuture(item.starts_at))
+            .filter(matches)
             .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
           const history = appointments
-            .filter((item) => !upcoming.includes(item))
+            .filter((item) => !(item.status === "booked" && isFuture(item.starts_at)))
+            .filter(matches)
             .sort((a, b) => b.starts_at.localeCompare(a.starts_at));
           return (
             <>
@@ -119,6 +140,12 @@ export default function AppointmentsPage() {
                         showDate
                         actions={
                           <div className="item-actions">
+                            <Link
+                              className="button button-small button-light"
+                              href="/patient/appointments"
+                            >
+                              View
+                            </Link>
                             <button
                               className="button button-light button-small"
                               type="button"

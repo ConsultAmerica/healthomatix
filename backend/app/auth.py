@@ -88,8 +88,10 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     session: Session = Depends(get_session),
 ) -> User:
+    request.state.access_token_claims = None
     if credentials is not None and credentials.scheme.lower() == "bearer":
         claims = decode_access_token(credentials.credentials)
+        request.state.access_token_claims = claims
         issuer = str(claims["iss"])
         subject = str(claims["sub"])
     else:

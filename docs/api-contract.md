@@ -56,6 +56,14 @@ The following routes are mounted in the Healthomatix API.
 | `GET` | `/api/v1/tenants/{tenant_id}/appointments` | Provider's own or clinic-admin/staff calendar, bounded by date range. |
 | `POST` | `/api/v1/tenants/{tenant_id}/appointments/{appointment_id}/cancel` | Patient cancels own active booking; slot release and audit/outbox writes are atomic. |
 | `POST` | `/api/v1/tenants/{tenant_id}/appointments/{appointment_id}/reschedule` | Patient moves own active booking to an open slot transactionally. |
+| `POST` | `/api/v1/tenants/{tenant_id}/sessions` | Create telehealth session for a booked appointment (consent-gated). |
+| `GET` | `/api/v1/tenants/{tenant_id}/sessions/{session_id}` | Read session metadata. |
+| `POST` | `/api/v1/tenants/{tenant_id}/sessions/{session_id}/join` | Issue short-lived participant token (Fake video in CI; BAA provider in production). |
+| `POST` | `/api/v1/tenants/{tenant_id}/sessions/{session_id}/complete` | Clinician ends visit, stores follow-up, writes FHIR Encounter. |
+| `GET`, `POST` | `/api/v1/tenants/{tenant_id}/threads`, `.../messages` | Secure in-app messaging; no PHI in email/SMS bodies. |
+| `POST` | `/api/v1/tenants/{tenant_id}/summaries`, `/notes`, `/tasks` | Create ClinicalDraft AI outputs (never auto-written to chart). |
+| `GET` | `/api/v1/tenants/{tenant_id}/drafts` | List drafts for a patient (consent-gated). |
+| `POST` | `/api/v1/tenants/{tenant_id}/drafts/{draft_id}/approve` | Clinician approval gate → FHIR Composition or Task. |
 | `GET` | `/api/v1/platform/tenants` | Exact configured platform administrators only; returns bounded tenant metadata, not members or clinical records. |
 | `POST` | `/api/v1/platform/tenants` | Platform administrator provisions a tenant, initial location, and an existing user's tenant-admin membership; action is audited. |
 | `GET`, `POST` | `/api/v1/platform/support-access-requests` | Platform administrator lists or creates purpose-coded, ticket-bound, time-limited pending requests. Requests do not grant support access. |
@@ -116,18 +124,18 @@ administration alone never authorizes clinical-record reads.
 
 ## Future contracts — not operational
 
-These contracts are reserved for separate design and approval. Phase 1 does
-not mount the endpoints or claim that workflows are available.
+These remain reserved for later design. Telehealth sessions, messaging, AI
+drafts with approval, FHIR facade Appointment/Slot/Encounter/Composition/Task,
+trends, and document intelligence are mounted (see snapshot above); live
+video/OCR/LLM still require BAA-covered providers.
 
 | Module | Contract outline |
 |---|---|
 | Provider discovery | `GET /api/v1/tenants/{tenant_id}/providers?specialty=&location=`; returns only active, currently verified profiles. |
 | On-demand consultations | `POST /api/v1/tenants/{tenant_id}/consultation-requests`; queue admission and clinical coverage controlled separately. |
-| Video | `POST /api/v1/consultations/{id}/video-authorizations`; short-lived participant-scoped authorization only, no raw room token in logs. |
-| Secure messaging | `POST /api/v1/tenants/{tenant_id}/threads`, `GET/POST /threads/{id}/messages`; asynchronous, consent-aware, attachment storage private. |
-| Encounters/notes | `POST /api/v1/tenants/{tenant_id}/encounters`, draft/update/sign lifecycle; explicit author, signer, timestamps and immutable signed version. |
+| Signed encounter notes | Full draft/amend/sign/lock lifecycle beyond AI Composition approval. |
 | Medications | Medication reconciliation and prescription orders only after licensed-clinician, jurisdiction, interaction, and legal workflow review; never a patient self-prescribing endpoint. |
 | Labs/imaging | Adapter contracts for orders/results with external source identifiers, provenance, terminology, and reconciliation state. |
-| Follow-up | `POST /api/v1/encounters/{id}/follow-up-plans`; reminder delivery is separately consented and opt-out aware. |
+| Reminder delivery | Outbox worker for consented appointment/follow-up notifications (no PHI in email/SMS bodies). |
 | Payments/insurance | Idempotent payment-intent/claim references; no cardholder data stored by Healthomatix. |
-| FHIR | Versioned R4 resource mapping and consent/security labels; no direct write-through until interoperability and privacy review. |
+| External FHIR | Swap facade for HAPI/Medplum/cloud Healthcare API with consent/security labels. |

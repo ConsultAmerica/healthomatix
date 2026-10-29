@@ -5,10 +5,13 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { BrandMark } from "@/app/brand-mark";
 import { Icon, type IconName } from "@/components/icons";
+import { ThemeToggle } from "@/components/theme-provider";
 import { LoadingState, ProblemState, ToastProvider } from "@/components/ui";
 import { DEMO_PERSONAS, findPersona } from "@/lib/demo-personas";
 import { NoMembership, SignInPanel } from "./onboarding";
 import { PortalProvider, ROLE_LABELS, usePortal, type PortalKind, type Role } from "./portal-context";
+import { DemoSeedButton } from "./demo-seed-button";
+import { SandboxTour, shouldAutoStartTour } from "./sandbox-tour";
 
 export type NavItem = {
   label: string;
@@ -46,6 +49,7 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
   const pathname = usePathname();
   const { state, demo, memberships, active, selectTenant, refresh } = usePortal();
   const [authError, setAuthError] = useState<string | null>(null);
+  const [tourOpen, setTourOpen] = useState(false);
   const root = `/${config.kind}`;
   const role = active?.role as Role | undefined;
 
@@ -60,7 +64,16 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
     }
   }, []);
 
+  useEffect(() => {
+    if (state.status === "ready" && demo.user && shouldAutoStartTour()) {
+      setTourOpen(true);
+    }
+  }, [state.status, demo.user]);
+
   const visibleNav = config.nav.filter((item) => !item.roles || (role && item.roles.includes(role)));
+  const visibleSecondary = config.secondary.filter(
+    (item) => !item.roles || (role && item.roles.includes(role)),
+  );
   const ready = state.status === "ready";
 
   let content: ReactNode;
@@ -96,6 +109,7 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
           <BrandMark />
         </Link>
         <div className="topbar-actions">
+          <ThemeToggle compact />
           {ready && memberships.length > 1 && active && (
             <label className="tenant-switcher">
               <span className="visually-hidden">Current clinic</span>
@@ -132,7 +146,9 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
           )}
         </div>
       </header>
-      {ready && demo.user && <DemoBar current={demo.user} pathname={pathname} />}
+      {ready && demo.user && (
+        <DemoBar current={demo.user} pathname={pathname} onStartTour={() => setTourOpen(true)} />
+      )}
       <div className="portal-layout">
         <nav className="side-nav" aria-label={`${config.heading} navigation`}>
           <p className="nav-heading">{config.heading}</p>
@@ -152,20 +168,20 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
                 );
               })
             : null}
-          {ready && (
+          {ready && visibleSecondary.length > 0 ? (
             <div className="nav-secondary">
-              {config.secondary.map((item) => (
+              {visibleSecondary.map((item) => (
                 <Link
                   className={`nav-link${pathname === item.href ? " selected" : ""}`}
                   href={item.href}
-                  key={item.href}
+                  key={`${item.href}-${item.label}`}
                   aria-current={pathname === item.href ? "page" : undefined}
                 >
-                  {item.label}
+                  {(role && item.labelFor?.[role]) ?? item.label}
                 </Link>
               ))}
             </div>
-          )}
+          ) : null}
           <p className="nav-footnote">
             Clinic connections stay separate. Switching clinics never shares records between them.
           </p>
@@ -174,6 +190,7 @@ function ShellFrame({ config, children }: { config: PortalConfig; children: Reac
           {content}
         </main>
       </div>
+      <SandboxTour kind={config.kind} open={tourOpen} onClose={() => setTourOpen(false)} />
     </div>
   );
 }
@@ -187,7 +204,15 @@ function initials(label: string): string {
     .join("");
 }
 
-function DemoBar({ current, pathname }: { current: string; pathname: string }) {
+function DemoBar({
+  current,
+  pathname,
+  onStartTour,
+}: {
+  current: string;
+  pathname: string;
+  onStartTour: () => void;
+}) {
   const persona = findPersona(current);
   return (
     <div className="demo-bar" role="region" aria-label="Demo mode">
@@ -196,20 +221,32 @@ function DemoBar({ current, pathname }: { current: string; pathname: string }) {
         Signed in as <strong>{persona?.label ?? current}</strong>
         <span className="demo-bar-note"> · Synthetic data only — never enter real patient information.</span>
       </p>
-      <form className="demo-switch" method="post" action="/auth/demo">
-        <input type="hidden" name="returnTo" value={pathname} />
-        <label>
-          <span className="visually-hidden">Switch demo user</span>
-          <select name="persona" defaultValue={current}>
-            {DEMO_PERSONAS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="submit">Switch</button>
-      </form>
+      <div className="demo-bar-actions">
+        <button className="demo-tour-btn" type="button" onClick={onStartTour}>
+          Take a 2-minute tour
+        </button>
+        <span className="demo-seed-inline">
+          <DemoSeedButton
+            className="demo-tour-btn"
+            label="Seed sandbox"
+            redirectTo={pathname.startsWith("/patient") ? "/patient/timeline" : "/clinic"}
+          />
+        </span>
+        <form className="demo-switch" method="post" action="/auth/demo">
+          <input type="hidden" name="returnTo" value={pathname} />
+          <label>
+            <span className="visually-hidden">Switch demo user</span>
+            <select name="persona" defaultValue={current}>
+              {DEMO_PERSONAS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit">Switch</button>
+        </form>
+      </div>
     </div>
   );
 }

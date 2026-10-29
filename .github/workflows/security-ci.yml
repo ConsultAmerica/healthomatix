@@ -1,0 +1,46 @@
+name: Security and quality CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+          pip install pip-audit
+      - name: Dependency audit
+        run: pip-audit --strict || true
+        # Non-blocking until a formal vulnerability SLA is approved; failures are reviewed in V1.8 reports.
+      - name: Pytest
+        run: pytest -q --tb=short
+        env:
+          HEALTHOMATIX_ENV: development
+          API_RATE_LIMIT_ENABLED: "false"
+
+  web-lockfile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install and audit
+        run: |
+          npm ci || npm install
+          npm audit --audit-level=high || true

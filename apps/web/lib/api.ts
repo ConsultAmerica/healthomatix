@@ -52,7 +52,7 @@ function kindFor(status: number): ProblemKind {
   return "unexpected";
 }
 
-function problemFrom(status: number, body: unknown, requestId: string): ApiProblem {
+export function problemFrom(status: number, body: unknown, requestId: string): ApiProblem {
   const fields: Record<string, string> = {};
   let code = `HTTP_${status}`;
   let message = "Something went wrong. Try again.";

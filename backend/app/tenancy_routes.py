@@ -28,6 +28,7 @@ from app.models import (
     User,
 )
 from app.schemas import (
+    ChartNumberWrite,
     ClinicOnboardingWrite,
     ClinicPatientDetailRead,
     ClinicPatientRead,
@@ -138,7 +139,7 @@ def list_members(
 def list_clinic_patients(
     tenant_id: str,
     response: Response,
-    membership: TenantMembership = Depends(require_role("tenant_admin", "staff")),
+    membership: TenantMembership = Depends(require_role("tenant_admin", "staff", "provider")),
     session: Session = Depends(get_session),
 ) -> list[ClinicPatientRead]:
     if membership.tenant_id != tenant_id:
@@ -172,7 +173,7 @@ def get_clinic_patient(
     tenant_id: str,
     clinic_patient_id: str,
     response: Response,
-    membership: TenantMembership = Depends(require_role("tenant_admin", "staff")),
+    membership: TenantMembership = Depends(require_role("tenant_admin", "staff", "provider")),
     session: Session = Depends(get_session),
 ) -> ClinicPatientDetailRead:
     if membership.tenant_id != tenant_id:
@@ -218,12 +219,131 @@ def get_clinic_patient(
     response.headers["Cache-Control"] = "no-store"
     return ClinicPatientDetailRead(
         clinic_patient_id=row.id,
+        patient_user_id=row.patient_user_id,
         chart_number=row.chart_number,
         status=row.status,
         created_at=row.created_at,
         document_count=int(document_count or 0),
         open_thread_count=int(open_thread_count or 0),
         upcoming_appointment_count=int(upcoming_appointment_count or 0),
+    )
+
+
+@router.patch(
+    "/tenants/{tenant_id}/patients/{clinic_patient_id}",
+    response_model=ClinicPatientDetailRead,
+)
+def update_clinic_patient(
+    tenant_id: str,
+    clinic_patient_id: str,
+    body: ChartNumberWrite,
+    request: Request,
+    response: Response,
+    user: User = Depends(get_current_user),
+    membership: TenantMembership = Depends(require_role("tenant_admin", "staff", "provider")),
+    session: Session = Depends(get_session),
+) -> ClinicPatientDetailRead:
+    if membership.tenant_id != tenant_id:
+        raise ApiError("TENANT_NOT_FOUND", "Tenant not found.", 404)
+    row = session.execute(
+        select(ClinicPatient).where(
+            ClinicPatient.tenant_id == tenant_id,
+            ClinicPatient.id == clinic_patient_id,
+            ClinicPatient.status == "active",
+        )
+    ).scalar_one_or_none()
+    if row is None:
+        raise ApiError("PATIENT_NOT_FOUND", "Patient not found.", 404)
+
+    chart = (body.chart_number or "").strip() or None
+    try:
+        with session.begin_nested():
+            row.chart_number = chart
+            session.flush()
+            append_audit_event(
+                session,
+                actor_user_id=user.id,
+                tenant_id=tenant_id,
+                action="clinic_patient.updated",
+                subject_type="clinic_patient",
+                subject_id=row.id,
+                request_id=_request_id(request),
+            )
+    except IntegrityError as error:
+        raise ApiError(
+            "CHART_NUMBER_UNAVAILABLE",
+            "That chart number is already in use.",
+            409,
+        ) from error
+
+    response.headers["Cache-Control"] = "no-store"
+    return get_clinic_patient(
+        tenant_id=tenant_id,
+        clinic_patient_id=clinic_patient_id,
+        response=response,
+        membership=membership,
+        session=session,
+    )
+
+
+@router.post(
+    "/tenants/{tenant_id}/members/{user_id}/deactivate",
+    response_model=MemberRead,
+)
+def deactivate_member(
+    tenant_id: str,
+    user_id: str,
+    request: Request,
+    response: Response,
+    user: User = Depends(get_current_user),
+    membership: TenantMembership = Depends(require_role("tenant_admin")),
+    session: Session = Depends(get_session),
+) -> MemberRead:
+    if membership.tenant_id != tenant_id:
+        raise ApiError("TENANT_NOT_FOUND", "Tenant not found.", 404)
+    if user_id == user.id:
+        raise ApiError("CANNOT_DEACTIVATE_SELF", "You cannot deactivate your own membership.", 409)
+    member = session.execute(
+        select(TenantMembership).where(
+            TenantMembership.tenant_id == tenant_id,
+            TenantMembership.user_id == user_id,
+            TenantMembership.status == "active",
+        )
+    ).scalar_one_or_none()
+    if member is None:
+        raise ApiError("MEMBER_NOT_FOUND", "Member not found.", 404)
+    if member.role == "tenant_admin":
+        admin_count = session.execute(
+            select(func.count())
+            .select_from(TenantMembership)
+            .where(
+                TenantMembership.tenant_id == tenant_id,
+                TenantMembership.role == "tenant_admin",
+                TenantMembership.status == "active",
+            )
+        ).scalar_one()
+        if int(admin_count or 0) <= 1:
+            raise ApiError(
+                "LAST_ADMIN",
+                "Keep at least one active clinic administrator.",
+                409,
+            )
+    member.status = "inactive"
+    append_audit_event(
+        session,
+        actor_user_id=user.id,
+        tenant_id=tenant_id,
+        action="membership.deactivated",
+        subject_type="tenant_membership",
+        subject_id=member.id,
+        request_id=_request_id(request),
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return MemberRead(
+        user_id=member.user_id,
+        role=member.role,
+        status=member.status,
+        created_at=member.created_at,
     )
 
 
@@ -491,6 +611,59 @@ def create_location(
         raise ApiError(
             "LOCATION_NAME_UNAVAILABLE", "Location name is already in use.", 409
         ) from error
+    response.headers["Cache-Control"] = "no-store"
+    return LocationRead(
+        location_id=location.id,
+        name=location.name,
+        timezone=location.timezone,
+    )
+
+
+@router.post(
+    "/tenants/{tenant_id}/locations/{location_id}/deactivate",
+    response_model=LocationRead,
+)
+def deactivate_location(
+    tenant_id: str,
+    location_id: str,
+    request: Request,
+    response: Response,
+    user: User = Depends(get_current_user),
+    membership: TenantMembership = Depends(require_role("tenant_admin")),
+    session: Session = Depends(get_session),
+) -> LocationRead:
+    if membership.tenant_id != tenant_id:
+        raise ApiError("TENANT_NOT_FOUND", "Tenant not found.", 404)
+    location = session.execute(
+        select(ClinicLocation).where(
+            ClinicLocation.tenant_id == tenant_id,
+            ClinicLocation.id == location_id,
+            ClinicLocation.status == "active",
+        )
+    ).scalar_one_or_none()
+    if location is None:
+        raise ApiError("LOCATION_NOT_FOUND", "Location not found.", 404)
+    active_count = session.execute(
+        select(func.count())
+        .select_from(ClinicLocation)
+        .where(ClinicLocation.tenant_id == tenant_id, ClinicLocation.status == "active")
+    ).scalar_one()
+    if int(active_count or 0) <= 1:
+        raise ApiError(
+            "LAST_LOCATION",
+            "Keep at least one active clinic location.",
+            409,
+        )
+    location.status = "inactive"
+    append_audit_event(
+        session,
+        actor_user_id=user.id,
+        tenant_id=tenant_id,
+        action="clinic.location_deactivated",
+        subject_type="clinic_location",
+        subject_id=location.id,
+        request_id=_request_id(request),
+    )
     response.headers["Cache-Control"] = "no-store"
     return LocationRead(
         location_id=location.id,

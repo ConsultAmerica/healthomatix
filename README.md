@@ -91,7 +91,9 @@ The repository deploys as two Vercel projects in the same team:
 | Project | Root directory | Notes |
 |---|---|---|
 | API | `backend` | FastAPI runs as a Vercel Function (`[tool.vercel]` in `pyproject.toml`). Attach a Neon database from the Vercel Marketplace; its `DATABASE_URL` is converted to the psycopg driver automatically, and `alembic upgrade head` runs as the build step. |
-| Web | `apps/web` | Next.js. Set `HEALTHOMATIX_API_URL` to the API project's URL, plus `APP_BASE_URL`, `SESSION_SECRET`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, and `OIDC_AUDIENCE`. |
+| Web | `apps/web` | Next.js. Keep **Root Directory** as `apps/web` (see `apps/web/vercel.json` so npm workspaces install from the repo root). Set `HEALTHOMATIX_API_URL` to the API project's URL, plus `APP_BASE_URL`, `SESSION_SECRET`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, and `OIDC_AUDIENCE`. |
+
+Web production (this team): [https://healthomatix-web.vercel.app](https://healthomatix-web.vercel.app). Deploy from the **repo root** (`vercel.json` builds `npm run web:build` and sets `outputDirectory` to `apps/web/.next`). The bare `healthomatix.vercel.app` hostname is not this project and will 404 until you assign that domain. Do not point the web domain at the API project.
 
 Set `OIDC_ISSUER`, `OIDC_AUDIENCE`, and `OIDC_JWKS_URL` on the API project as
 well.

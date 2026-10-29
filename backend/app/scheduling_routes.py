@@ -106,6 +106,14 @@ def _appointment_read(session: Session, appointment: Appointment) -> Appointment
         )
     ).one()
     slot, provider_name, location_name, timezone_name = row
+    from app.fhir_models import VideoSession
+
+    video = session.execute(
+        select(VideoSession).where(
+            VideoSession.tenant_id == appointment.tenant_id,
+            VideoSession.appointment_id == appointment.id,
+        )
+    ).scalar_one_or_none()
     return AppointmentRead(
         appointment_id=appointment.id,
         tenant_id=appointment.tenant_id,
@@ -119,6 +127,8 @@ def _appointment_read(session: Session, appointment: Appointment) -> Appointment
         ends_at=_utc(slot.ends_at),
         status=appointment.status,
         created_at=_utc(appointment.created_at),
+        session_id=video.id if video else None,
+        session_status=video.status if video else None,
     )
 
 
@@ -352,6 +362,50 @@ def create_provider_availability(
     return _availability_read(session, slot)
 
 
+@router.delete(
+    "/tenants/{tenant_id}/providers/me/availability/{availability_id}",
+    status_code=204,
+)
+def withdraw_provider_availability(
+    tenant_id: str,
+    availability_id: str,
+    request: Request,
+    user: User = Depends(get_current_user),
+    membership: TenantMembership = Depends(require_role("provider")),
+    session: Session = Depends(get_session),
+) -> Response:
+    if membership.tenant_id != tenant_id:
+        raise ApiError("TENANT_NOT_FOUND", "Tenant not found.", 404)
+    slot = session.execute(
+        select(ProviderAvailability)
+        .where(
+            ProviderAvailability.tenant_id == tenant_id,
+            ProviderAvailability.id == availability_id,
+            ProviderAvailability.provider_user_id == user.id,
+        )
+        .with_for_update()
+    ).scalar_one_or_none()
+    if slot is None:
+        raise ApiError("AVAILABILITY_NOT_FOUND", "Availability not found.", 404)
+    if slot.status != "open":
+        raise ApiError(
+            "AVAILABILITY_NOT_OPEN",
+            "Only open slots can be withdrawn.",
+            409,
+        )
+    session.delete(slot)
+    append_audit_event(
+        session,
+        actor_user_id=user.id,
+        tenant_id=tenant_id,
+        action="availability.withdrawn",
+        subject_type="provider_availability",
+        subject_id=availability_id,
+        request_id=_request_id(request),
+    )
+    return Response(status_code=204, headers={"Cache-Control": "no-store"})
+
+
 @router.post(
     "/tenants/{tenant_id}/appointments",
     response_model=AppointmentRead,
@@ -434,6 +488,14 @@ def book_appointment(
                 subject_id=appointment.id,
                 request_id=_request_id(request),
             )
+            from app.consultation.fhir_sync import sync_fhir_slot_and_appointment
+
+            sync_fhir_slot_and_appointment(
+                session,
+                tenant_id=tenant_id,
+                appointment=appointment,
+                slot=slot,
+            )
     except IntegrityError as error:
         raise ApiError("SLOT_UNAVAILABLE", "Availability is no longer bookable.", 409) from error
     response.headers["Cache-Control"] = "no-store"
@@ -514,25 +576,30 @@ def cancel_appointment(
     request: Request,
     response: Response,
     user: User = Depends(get_current_user),
-    membership: TenantMembership = Depends(require_role("patient")),
+    membership: TenantMembership = Depends(
+        require_role("patient", "tenant_admin", "staff", "provider")
+    ),
     session: Session = Depends(get_session),
 ) -> AppointmentRead:
     if membership.tenant_id != tenant_id:
         raise ApiError("TENANT_NOT_FOUND", "Tenant not found.", 404)
-    appointment = session.execute(
-        select(Appointment)
-        .where(
-            Appointment.id == appointment_id,
-            Appointment.tenant_id == tenant_id,
-            Appointment.patient_user_id == user.id,
-        )
-        .with_for_update()
-    ).scalar_one_or_none()
+    query = select(Appointment).where(
+        Appointment.id == appointment_id,
+        Appointment.tenant_id == tenant_id,
+    )
+    if membership.role == "patient":
+        query = query.where(Appointment.patient_user_id == user.id)
+    appointment = session.execute(query.with_for_update()).scalar_one_or_none()
     if appointment is None:
         raise ApiError("APPOINTMENT_NOT_FOUND", "Appointment not found.", 404)
+    if membership.role == "provider" and appointment.provider_user_id != user.id:
+        # Look up via availability slot ownership after lock.
+        pass
     if appointment.status != "booked":
         raise ApiError("APPOINTMENT_NOT_BOOKED", "Appointment is not active.", 409)
     slot = _lock_slot(session, tenant_id, appointment.availability_id)
+    if membership.role == "provider" and slot.provider_user_id != user.id:
+        raise ApiError("APPOINTMENT_NOT_FOUND", "Appointment not found.", 404)
     appointment.status = "cancelled"
     slot.status = "open"
     append_audit_event(
@@ -549,7 +616,7 @@ def cancel_appointment(
         tenant_id=tenant_id,
         appointment_id=appointment.id,
         event_type="appointment.cancelled",
-        recipient_ids={user.id, slot.provider_user_id},
+        recipient_ids={appointment.patient_user_id, slot.provider_user_id},
     )
     response.headers["Cache-Control"] = "no-store"
     return _appointment_read(session, appointment)

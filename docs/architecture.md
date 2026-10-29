@@ -37,6 +37,23 @@
 - Split services only after independent scaling, regulatory boundary, or
   operational ownership requires it.
 
+### ADR-006: FHIR-on-Postgres facade (Phase 1–2)
+
+- Clinical Records are stored as FHIR R4 JSON in `fhir_resources` and exposed
+  under `/api/v1/fhir/R4`. This is an in-repo facade, not a claim of HIPAA
+  certification or a full HAPI/Medplum server.
+- Clinician/staff reads of patient-scoped resources require an active Consent
+  (`require_patient_consent`); denials write append-only `AuditEvent` rows and
+  FHIR `AuditEvent` resources.
+- Document intelligence uses OCR/LLM **ports** with Fake adapters in tests/CI.
+  Production deployments must use HIPAA-eligible OCR/LLM endpoints under a
+  signed BAA. Verification promotes Extractions to FHIR `Observation` with
+  `Provenance` back to the Extraction and `DocumentReference`.
+- MFA is required at the OIDC identity provider (IdP policy); the app does not
+  implement a separate TOTP factor.
+- An external FHIR server remains a future swap behind the same store/port
+  boundaries when operational ownership requires it.
+
 ### ADR-003: tenant and object authorization
 
 - A tenant represents a subscribing organization/clinic boundary. Locations
@@ -93,13 +110,17 @@ production readiness.
 
 | Area | Implemented foundation | Not implemented / release limitation |
 |---|---|---|
-| Identity | OIDC bearer-token validation, internal user mapping, tenant membership and role checks. | No configured identity provider, browser OIDC callback/session, or mobile sign-in/PKCE flow. |
-| Tenancy and clinic operations | Tenant provisioning, memberships, invitations, locations, patient-clinic links, provider profiles and credential states. | Patient chart/profile model is not yet a full clinic-specific chart design; no multi-location operational workflows or admin UI. |
+| Identity | OIDC bearer-token validation, internal user mapping, tenant membership and role checks; demo/OIDC session proxy for web. | Production IdP must enforce MFA; no mobile PKCE production wiring claim. |
+| Tenancy and clinic operations | Tenant provisioning, memberships, invitations, locations, patient-clinic links, provider profiles and credential states; provider-accessible patient roster. | Full multi-location operational workflows and separate SaaS-admin UI remain limited. |
 | Scheduling | Provider availability and appointment booking/cancellation/rescheduling with idempotency, transactional slot handling, audit, and outbox. | Default-off `SCHEDULING_ENABLED`; synthetic demonstration only; outbox has no delivery worker. |
-| Documents | Tenant-scoped document metadata and a fail-closed private-storage port. | No upload/download routes, configured storage provider, OCR, extraction, or human verification workflow. |
-| Web and mobile | Clinic/patient Next.js previews and a five-destination Expo patient shell. | No authenticated live-data use; these are not production clinical applications. |
+| Documents & intelligence (Phase 2) | Private upload/download, FHIR `DocumentReference`, OCR/LLM ports (Fake in CI), Extraction drafts, clinician verify → Observation + Provenance. | Live OCR/LLM requires BAA-covered endpoints; no autonomous clinical AI. |
+| Clinical records (Phase 1) | FHIR-on-Postgres facade (`fhir_resources`, `/api/v1/fhir/R4`), ConsentGrant↔FHIR Consent sync/withdraw, consent-gated clinician reads with dual AuditEvent. | Not a full HAPI/Medplum server; terminology, Condition/Encounter chart depth, and external FHIR swap still future work. |
+| Health trends (Phase 3) | `/trends` + `/insights` over verified Observations; reference ranges; educational Fake change flags; patient + clinician chart UIs; source Document links via Provenance/`derivedFrom`. | Production insights LLM under BAA; richer terminology coding. |
+| Consultation (Phase 4) | Scheduling + messaging; `/sessions` Fake video port; FHIR Appointment/Slot on book; complete → Encounter + follow-up; consult workspace with in-visit trends. | Live Daily/LiveKit/Vonage/Chime under BAA (not Twilio Programmable Video). |
+| AI clinical support (Phase 5) | `/summaries`, `/notes`, `/tasks` as ClinicalDraft; approve → Composition/Task only; unapproved drafts never in FHIR chart. | Production LLM under BAA; transcription optional later. |
+| Web and mobile | Authenticated clinic/patient Next.js portals (chart, verify, consent, messaging, scheduling UI); Expo patient shell. | Mobile live-data parity and production hardening gates remain. |
 | Platform operations | Restricted tenant metadata/provisioning APIs and pending support-access requests. | No subscription billing, usage metering, support-access grant process, or separate admin UI. |
-| Clinical workflows | Contracts and domain boundaries only. | Messaging, encounters, notes, telehealth, prescribing, labs/imaging, follow-up, and autonomous AI are not operational. |
+| Later clinical workflows | Messaging, encounters via telehealth complete, AI drafts with approval. | Prescribing, imaging orders, billing, and autonomous clinical AI remain out of scope. |
 
 Local validation last run for the repository audit: backend tests (29 passed),
 API generated-output check, web TypeScript check, and mobile TypeScript check.
@@ -117,8 +138,9 @@ flowchart LR
   API --> DB[(PostgreSQL)]
   API --> Storage[Private document storage port]
   API --> Audit[Append-only audit records]
-  API -. optional, disabled in Phase 1 .-> Extract[Document extraction adapter]
-  API -. future contract only .-> Integrations[Messaging, video, payments, FHIR]
+  API --> FHIR[(fhir_resources R4 facade)]
+  API --> Extract[OCR/LLM ports · Fake in CI]
+  API -. future .-> Integrations[Telehealth, payments, external FHIR]
 ```
 
 The diagram is a target design, not a claim that browser/native authentication,
@@ -133,17 +155,17 @@ production storage, or future integrations are currently connected.
 | Patient management | Internal user identity, user-keyed minimal profile, and tenant-scoped clinic-patient relationship. | Fully clinic-scoped chart/profile workflows, search, duplicate resolution, dependents, care teams. |
 | Provider | Tenant-scoped provider membership/profile and credential-verification state machine. | Specialty directory, availability, licensing-registry integrations. |
 | Consent and access grants | Purpose-, scope-, and version-bound grants/withdrawals; explicit cross-clinic access grants. | Encounter-, integration-, and delegated-caregiver consent. |
-| Documents and health intelligence | Private document metadata and storage port; no upload/extraction workflow until storage and review gates are implemented. | OCR, page/field provenance, verified lab/imaging summaries, clinician-controlled drafting. |
+| Documents and health intelligence | Upload/download under consent; Fake OCR/LLM ports; Extraction → human verify → Observation with Provenance and DocumentReference linkage. | Production OCR/LLM under BAA; richer terminology; imaging pipelines. |
 | Audit | Append-only, privacy-minimal security event trail. | Retention/export and controlled audit review. |
 | Scheduling | Tenant-scoped provider availability and appointment booking/cancellation/rescheduling, default-off feature gate, audit and notification outbox; synthetic demonstration only. | Waitlists, delivery workers, external reminders, operational clinical scheduling after review. |
-| Telehealth and consultations | Contract only; not enabled. | Participant authorization, waiting room, video-provider adapter, visit lifecycle. |
+| Telehealth and consultations | `/sessions` Fake video port; book → FHIR Appointment/Slot; complete → Encounter + follow-up; consult workspace. | Live BAA video provider; waiting room polish; outbox delivery worker. |
 | Messaging | Contract only; not enabled. | Staff inbox, asynchronous patient-clinician threads, assignment/escalation. |
 | Encounters and clinical documentation | Contract only; not enabled. | Clinician-authored notes, sign/lock and amendment lifecycle. |
 | Medication and prescribing | Contract only; not enabled. | Medication reconciliation; prescribing only after jurisdictional and clinical review. |
 | Labs and imaging | Contract only; not enabled. | External orders/results, terminology, provenance, and reconciliation. |
 | Care management | Contract only; not enabled. | Follow-up plans, preventive reminders, chronic-care tasks. |
 | Payments and revenue cycle | Contract only; not enabled. | Payment-provider integration, invoices, refunds; later eligibility/claims. |
-| Interoperability and remote monitoring | Contract only; not enabled. | FHIR/HL7/EHR exchange and consent-aware device integrations. |
+| Interoperability and remote monitoring | In-repo FHIR R4 facade + Consent/AuditEvent dual-write; not a certified EHR exchange. | External FHIR server swap, HL7, and consent-aware device integrations. |
 | Operations and governance | Audit foundations only; no unrestricted SaaS support access. | Clinic reporting, retention, access reviews, incident controls. |
 
 ## Proposed target entity relationship design

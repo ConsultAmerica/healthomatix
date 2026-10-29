@@ -1,5 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { CareGraphExplorer } from "@/components/landing/care-graph-explorer";
+import { ConsentScopePreview } from "@/components/landing/consent-scope-preview";
+import { SchemaInspector } from "@/components/landing/schema-inspector";
+import { ThemeToggle } from "@/components/theme-provider";
 import { BrandMark } from "./brand-mark";
 import { FeatureAccordion } from "./feature-accordion";
 import { FeatureTabs } from "./feature-tabs";
@@ -8,50 +12,58 @@ import { PageMotion } from "./page-motion";
 import { ProductMock } from "./product-mocks";
 
 const metrics = [
-  { value: "2", label: "Live role previews", detail: "Clinic workspace + patient portal" },
-  { value: "18+", label: "API domain objects", detail: "From ClinicRead to ConsentRead" },
-  { value: "4", label: "Care connections mapped", detail: "Patients · clinics · labs · pharmacies" },
-  { value: "0", label: "Live PHI exposed", detail: "Preview surfaces stay honest" },
+  { value: "3", label: "Connected portals", detail: "Clinic admin · provider · patient" },
+  { value: "1", label: "AI document path", detail: "Upload → extract → verify → timeline" },
+  { value: "Multi-tenant", label: "Clinic isolation", detail: "Role-based access + audit trail" },
+  { value: "0", label: "Live PHI exposed", detail: "Synthetic demos stay honest" },
 ];
 
 const platformObjects = [
   {
     name: "ClinicRead",
+    label: "Clinic Information",
     purpose: "Tenant, location, timezone, and role for an authenticated clinic session.",
     fields: ["display_name", "slug", "location_name", "timezone", "role", "tenant_id"],
   },
   {
     name: "AppointmentRead",
+    label: "Appointments",
     purpose: "Scheduled visit bound to provider, location, patient membership, and status.",
     fields: ["starts_at", "ends_at", "provider_name", "location_name", "status", "timezone"],
   },
   {
     name: "AvailabilityRead",
-    purpose: "Bookable provider slots that gate AppointmentCreate writes.",
+    label: "Availability",
+    purpose: "Bookable provider slots that gate appointment booking.",
     fields: ["starts_at", "ends_at", "provider_name", "location_id", "status"],
   },
   {
     name: "CredentialRead",
+    label: "Provider Credentials",
     purpose: "Provider credential lifecycle with clinic-only review decisions.",
     fields: ["credential_type", "jurisdiction", "regulator", "status", "reviewed_at"],
   },
   {
     name: "ConsentRead",
-    purpose: "Purpose, scope, and policy version that trim what previews can show.",
+    label: "Patient Consent",
+    purpose: "Purpose, scope, and policy version that trim what care teams can see.",
     fields: ["purpose", "scope", "policy_version", "granted_at", "withdrawn_at"],
   },
   {
     name: "PatientProfileRead",
+    label: "Patient Profile",
     purpose: "Patient identity fields—masked in preview until secure access exists.",
     fields: ["preferred_name", "date_of_birth", "phone", "locale"],
   },
   {
     name: "InvitationRead",
+    label: "Invitations",
     purpose: "Single-use codes that join members or patients to a clinic safely.",
     fields: ["invitation_type", "expires_at", "status"],
   },
   {
     name: "DocumentRead",
+    label: "Medical Records",
     purpose: "Consent-scoped documents—never implied as live chart access here.",
     fields: ["document_type", "status", "created_at"],
   },
@@ -59,30 +71,30 @@ const platformObjects = [
 
 const applications = [
   {
-    title: "Ground your clinic workspace",
+    title: "Clinic & clinician workspace",
     detail:
-      "Open the clinic preview to walk ClinicRead readiness, MemberRead invites, CredentialRead review, and scheduling gates—without a live clinic account.",
+      "Invite your team, verify credentials, review today’s visits, approve AI drafts, and keep every clinic’s records isolated.",
     href: "/clinic",
-    cta: "Open clinic preview",
+    cta: "Explore clinic demo",
     mock: "clinic-workspace" as const,
     photo: "/photos/app-clinic.jpg",
   },
   {
-    title: "Connect patients with consent-aware views",
+    title: "Patient portal",
     detail:
-      "Explore the patient portal structure: masked PatientProfileRead, AppointmentRead timelines, and ConsentRead scopes that stay honest about limits.",
+      "Book care, upload lab reports, follow a Health Timeline, and control consent scopes that trim what the clinic can see.",
     href: "/patient",
-    cta: "Open patient preview",
+    cta: "Explore patient demo",
     mock: "patient-portal" as const,
     photo: "/photos/app-patient.jpg",
   },
   {
-    title: "Map the wider care network",
+    title: "Consultations & AI documentation",
     detail:
-      "Patients and clinics are live preview paths today. Laboratories and pharmacies appear on the product map as planned edges—never presented as available.",
-    href: "#connections",
-    cta: "View care connections",
-    mock: "care-graph" as const,
+      "Move from booking into a visit workspace with source-linked summaries and clinician-approved notes—AI assists, clinicians decide.",
+    href: "/clinic/consultations",
+    cta: "Open consultation workspace",
+    mock: "scheduling" as const,
     photo: "/photos/app-care.jpg",
   },
 ];
@@ -106,47 +118,47 @@ const stories = [
 
 const reasons = [
   {
-    title: "Workflows grounded in real objects",
+    title: "Built for clinic operations",
     detail:
-      "Screens map to ClinicRead, AppointmentRead, CredentialRead, and ConsentRead—not generic dashboard widgets.",
+      "Appointments, credentials, chart access, and consult documentation share one tenant-aware workflow—not disconnected tools.",
   },
   {
-    title: "Privacy in the payload",
+    title: "AI inside the workflow",
     detail:
-      "PatientProfileRead stays masked. DocumentRead is consent-scoped. Previews never invent live PHI.",
+      "Document extraction, trends, and draft notes appear where clinicians already work, with mandatory human review before anything is signed.",
   },
   {
-    title: "Gates you can see",
+    title: "Privacy you can demonstrate",
     detail:
-      "Credential review, invitation codes, and availability writes are explicit states—not hidden blockers.",
+      "Consent scopes, audit events, and masked previews make authorization visible—without claiming HIPAA certification.",
   },
   {
-    title: "Role-aware paths",
+    title: "Role-specific portals",
     detail:
-      "Clinic admins, providers, and patients each get a surface that matches how they actually work.",
+      "Clinic administrators, providers, and patients each get navigation and dashboards matched to their job—not one generic screen.",
   },
 ];
 
 const faqs = [
   {
-    q: "Is this a live clinical system?",
-    a: "No. This is a development preview. Secure sign-in and access to live clinic or patient data are not configured. UI mocks use sample-shaped objects (ClinicRead, AppointmentRead, ConsentRead) to show structure—not real records.",
+    q: "Is Healthomatix a live clinical system today?",
+    a: "This deployment is a synthetic demonstration and development preview. Demo accounts use masked or sample data. Do not enter real patient information, and do not treat the product as HIPAA-certified.",
   },
   {
-    q: "What backend objects power the previews?",
-    a: "The platform API defines objects such as ClinicRead, MemberRead, AvailabilityRead, AppointmentRead, CredentialRead, PatientProfileRead, ConsentRead, InvitationRead, LocationRead, and DocumentRead. Previews demonstrate how those objects surface in workflows.",
+    q: "Who is Healthomatix for?",
+    a: "Clinics, clinicians, and patients who need connected scheduling, records, consultations, documentation, and AI-assisted workflows in one multi-tenant platform.",
   },
   {
-    q: "Who can explore the previews?",
-    a: "Anyone can explore the clinic workspace and patient portal demonstrations. They show structure, readiness language, and object shapes—not live care actions.",
+    q: "How do I request a demo?",
+    a: "Open the clinic workspace, sign in with a demo account (or your configured identity provider), and use Seed sandbox to provision a shared clinic linking admin, provider, and patient personas.",
   },
   {
-    q: "Are laboratories and pharmacies available?",
-    a: "Those connections are planned. They appear in the care graph so the roadmap is clear, but InvitationRead / MembershipRead paths for labs and pharmacies are not live yet.",
+    q: "What AI capabilities are available in the demo?",
+    a: "Document upload with Fake OCR extraction, clinician verification into Observations, Health Timeline and trends, plus clinician-approved visit summaries, notes, and follow-up tasks.",
   },
   {
-    q: "How is privacy handled in the preview?",
-    a: "Patient information stays unavailable. ConsentRead scopes, masked PatientProfileRead fields, and readiness notices make limitations obvious instead of implying live access.",
+    q: "Are laboratories and pharmacies connected?",
+    a: "They appear on the care network map as planned edges with target standards (HL7/FHIR, NCPDP). Patient and clinic membership paths are available in the demo today.",
   },
 ];
 
@@ -161,16 +173,19 @@ export default function HomePage() {
           <BrandMark />
         </Link>
         <nav className="main-nav" aria-label="Main navigation">
-          <a href="#overview">Platform</a>
-          <a href="#features">Capabilities</a>
-          <a href="#objects">Schemas</a>
+          <a href="#features">Features</a>
+          <a href="#applications">Product</a>
+          <a href="#demo">Demo</a>
           <a href="#connections">Network</a>
           <a href="#faq">FAQ</a>
         </nav>
         <div className="header-actions">
-          <Link className="text-link" href="/patient">Patient portal</Link>
+          <ThemeToggle compact />
+          <Link className="text-link" href="/patient">
+            Explore Patient Demo
+          </Link>
           <Link className="button button-small" href="/clinic">
-            Explore clinic
+            Explore Clinic Demo
           </Link>
         </div>
       </header>
@@ -181,47 +196,58 @@ export default function HomePage() {
           <span className="mesh-blob mesh-b" />
           <span className="mesh-blob mesh-c" />
         </div>
-        <HeroStage />
         <div className="hero-copy">
-          <p className="hero-eyebrow">Healthcare platform</p>
-          <h1 id="home-title" className="brand-hero">Healthomatix</h1>
+          <p className="hero-eyebrow">Healthomatix · Clinic SaaS</p>
+          <h1 id="home-title" className="brand-hero">One Intelligent Platform for Modern Healthcare</h1>
           <p className="hero-lead">
-            Connect clinics and patients on one API-backed surface—scheduling, credentials,
-            and consent kept clear, without implying live access to charts.
+            Healthomatix connects clinics, doctors, and patients through smarter scheduling, secure
+            medical records, online consultations, and AI-assisted clinical workflows.
           </p>
           <div className="hero-actions">
             <Link className="button" href="/clinic">
-              Explore the clinic preview
+              Explore Clinic Demo
             </Link>
             <Link className="button button-light" href="/patient">
-              Explore the patient preview
+              Explore Patient Demo
             </Link>
           </div>
-          <div className="hero-object-strip" aria-label="Featured platform objects">
-            {["ClinicRead", "AppointmentRead", "CredentialRead", "ConsentRead", "PatientProfileRead"].map((name) => (
-              <code key={name}>{name}</code>
-            ))}
-          </div>
+        </div>
+        <HeroStage />
+      </section>
+
+      <section className="product-screen-strip" aria-label="Product surfaces" data-reveal>
+        <div className="product-screen-grid">
+          <figure>
+            <ProductMock kind="clinic-workspace" />
+            <figcaption>Clinician dashboard</figcaption>
+          </figure>
+          <figure>
+            <ProductMock kind="patient-portal" />
+            <figcaption>Patient portal</figcaption>
+          </figure>
+          <figure>
+            <ProductMock kind="scheduling" />
+            <figcaption>Consultation &amp; scheduling</figcaption>
+          </figure>
         </div>
       </section>
 
       <nav className="page-rail" aria-label="On this page">
-        <a href="#overview">Platform</a>
-        <a href="#features">Capabilities</a>
-        <a href="#applications">Solutions</a>
+        <a href="#features">Features</a>
+        <a href="#applications">Product</a>
+        <a href="#demo">Demo</a>
         <a href="#objects">Schemas</a>
         <a href="#connections">Network</a>
-        <a href="#approach">Principles</a>
         <a href="#faq">FAQ</a>
       </nav>
 
       <section className="overview" id="overview" aria-labelledby="overview-title" data-reveal>
         <div className="section-intro section-intro-wide">
           <p className="section-kicker">Platform</p>
-          <h2 id="overview-title">Build agents of care on unified clinic context</h2>
+          <h2 id="overview-title">One platform for clinics, clinicians, and patients</h2>
           <p>
-            Point-and-click readiness for care teams, consent-aware patient views, and
-            enterprise-minded privacy—reusable across roles, grounded in your platform API.
+            Replace fragmented scheduling, charting, and messaging tools with a multi-tenant
+            workspace where AI assists inside clinical workflows—and clinicians stay accountable.
           </p>
         </div>
         <FeatureAccordion />
@@ -229,11 +255,11 @@ export default function HomePage() {
 
       <section className="features" id="features" aria-labelledby="features-title" data-reveal>
         <div className="section-intro section-intro-wide">
-          <p className="section-kicker">Capabilities</p>
-          <h2 id="features-title">Deliver relevant care responses with search across your clinic objects</h2>
+          <p className="section-kicker">Features</p>
+          <h2 id="features-title">Clinical workflows with AI where it earns its place</h2>
           <p>
-            Rotate through workspace, portal, scheduling, credentials, and consent—each panel
-            backed by live-shaped API objects and interactive product surfaces.
+            Scheduling, credentials, consent, document intelligence, telehealth visits, and
+            approved documentation—connected end to end for modern care teams.
           </p>
         </div>
         <FeatureTabs />
@@ -241,11 +267,11 @@ export default function HomePage() {
 
       <section className="applications" id="applications" aria-labelledby="applications-title" data-reveal>
         <div className="section-intro">
-          <p className="section-kicker">Solutions</p>
-          <h2 id="applications-title">Explore common applications to get started</h2>
+          <p className="section-kicker">Product</p>
+          <h2 id="applications-title">Realistic screens for every role</h2>
           <p>
-            Pick a path that matches your role. Each card opens a demonstration surface—structure
-            and intent only, never live patient information.
+            Walk the clinic workspace, patient portal, and consultation path with synthetic data.
+            No live PHI—just the workflows buyers need to evaluate.
           </p>
         </div>
         <div className="application-showcase">
@@ -273,34 +299,27 @@ export default function HomePage() {
 
       <section className="objects" id="objects" aria-labelledby="objects-title" data-reveal>
         <div className="section-intro">
-          <p className="section-kicker">Schemas</p>
-          <h2 id="objects-title">The objects behind every clinic and patient preview</h2>
+          <p className="section-kicker">For developers</p>
+          <h2 id="objects-title">API schemas behind the product</h2>
           <p>
-            Straight from the Healthomatix API—shared by landing mocks and portal screens so
-            product, design, and engineering work from one contract.
+            Everyday product language above—API contract names here. Switch JSON or TypeScript, then
+            toggle consent scopes on consent-sensitive schemas to watch the sample payload change live.
           </p>
         </div>
-        <div className="object-grid">
-          {platformObjects.map((object, index) => (
-            <article
-              className="object-card"
-              key={object.name}
-              data-reveal
-              style={{ transitionDelay: `${Math.min(index, 7) * 40}ms` }}
-            >
-              <header>
-                <code>{object.name}</code>
-                <span>schema</span>
-              </header>
-              <p>{object.purpose}</p>
-              <ul>
-                {object.fields.map((field) => (
-                  <li key={field}>{field}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
+        <SchemaInspector objects={platformObjects} />
+      </section>
+
+      <section className="consent-preview-section" id="consent-preview" aria-labelledby="consent-preview-title" data-reveal>
+        <div className="section-intro">
+          <p className="section-kicker">Privacy</p>
+          <h2 id="consent-preview-title">Granular patient consent scopes</h2>
+          <p>
+            Toggle visit summaries, lab histories, and schedule access, then flip JSON / TypeScript to
+            see how restricted scopes drop out of the payload—privacy enforced in the resource, not only
+            in the UI.
+          </p>
         </div>
+        <ConsentScopePreview />
       </section>
 
       <section className="trust" aria-labelledby="trust-title" data-reveal>
@@ -346,36 +365,11 @@ export default function HomePage() {
             <h2 id="connections-title">Made for everyone in the care journey</h2>
           </div>
           <p>
-            Start with patient and clinic MembershipRead paths. Laboratory and pharmacy edges
+            Start with patient and clinic membership paths. Laboratory and pharmacy connections
             are mapped for the future—visible on the graph, not available as live previews.
           </p>
         </div>
-        <div className="connections-layout">
-          <div className="connections-visual" aria-hidden="true">
-            <ProductMock kind="care-graph" />
-          </div>
-          <div className="role-grid">
-            {[
-              { label: "Patients", detail: "PatientProfileRead + AppointmentRead portal.", tone: "solid" },
-              { label: "Care teams", detail: "ClinicRead workspace with readiness gates.", tone: "solid-alt" },
-              { label: "Laboratories", detail: "Future edge on the care graph.", tone: "soft", status: "Planned" },
-              { label: "Pharmacies", detail: "Future edge on the care graph.", tone: "soft", status: "Planned" },
-            ].map((role, index) => (
-              <article className={`role-card role-${role.tone}`} key={role.label}>
-                <div className="role-card-top">
-                  <span className="role-number">0{index + 1}</span>
-                  {"status" in role && role.status ? (
-                    <span className="coming-soon">{role.status}</span>
-                  ) : null}
-                </div>
-                <div className="role-card-copy">
-                  <h3>{role.label}</h3>
-                  <p>{role.detail}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
+        <CareGraphExplorer />
       </section>
 
       <section className="why" id="approach" aria-labelledby="why-title" data-reveal>
@@ -397,32 +391,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="portal-callout" aria-labelledby="starting-point-title">
+      <section className="portal-callout" id="demo" aria-labelledby="starting-point-title">
         <div>
-          <p className="section-kicker">Get started</p>
-          <h2 id="starting-point-title">Explore a preview for your role</h2>
+          <p className="section-kicker">Request a demo</p>
+          <h2 id="starting-point-title">See the connected care path in minutes</h2>
           <p className="callout-description">
-            These screens are demonstrations only. Secure sign-in and access to live clinic data
-            are not available. Object mocks illustrate shape—not production records.
+            Sign in with a demo account, seed the sandbox clinic, then walk upload → AI extract →
+            verify → Health Timeline → consult drafts. Synthetic data only—never enter real patient information.
           </p>
         </div>
         <div className="callout-actions">
           <Link className="callout-link" href="/clinic">
             <span className="callout-symbol" aria-hidden="true">✚</span>
             <span>
-              <strong>Clinic workspace</strong>
-              <small>ClinicRead · CredentialRead · AvailabilityRead</small>
+              <strong>Explore clinic demo</strong>
+              <small>Admin · doctor · workboard · audit</small>
             </span>
             <span className="callout-arrow" aria-hidden="true">→</span>
           </Link>
           <Link className="callout-link" href="/patient">
             <span className="callout-symbol patient-symbol" aria-hidden="true">♡</span>
             <span>
-              <strong>Patient portal</strong>
-              <small>PatientProfileRead · AppointmentRead · ConsentRead</small>
+              <strong>Explore patient demo</strong>
+              <small>Timeline · records · consent · booking</small>
             </span>
             <span className="callout-arrow" aria-hidden="true">→</span>
           </Link>
+          <a className="callout-link" href="mailto:hello@healthomatix.com?subject=Healthomatix%20demo%20request">
+            <span className="callout-symbol" aria-hidden="true">✉</span>
+            <span>
+              <strong>Request a demo</strong>
+              <small>Talk with our team about your clinic</small>
+            </span>
+            <span className="callout-arrow" aria-hidden="true">→</span>
+          </a>
         </div>
       </section>
 
@@ -445,12 +447,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="site-footer">
-        <Link className="brand brand-footer" href="/">
-          <BrandMark />
-        </Link>
-        <p>Care connections, thoughtfully designed.</p>
-        <span className="preview-disclaimer">Development preview · No live patient information</span>
+      <footer className="site-footer site-footer-modern">
+        <div className="footer-brand">
+          <Link className="brand brand-footer" href="/">
+            <BrandMark />
+          </Link>
+          <p>One intelligent platform for clinics, doctors, and patients.</p>
+        </div>
+        <nav className="footer-nav" aria-label="Footer">
+          <a href="#features">Features</a>
+          <a href="#applications">Product</a>
+          <a href="#demo">Demo</a>
+          <a href="#faq">FAQ</a>
+          <Link href="/clinic">Clinic demo</Link>
+          <Link href="/patient">Patient demo</Link>
+        </nav>
+        <span className="preview-disclaimer">
+          Synthetic demonstration · No live patient information · Not a HIPAA compliance claim
+        </span>
       </footer>
     </main>
   );

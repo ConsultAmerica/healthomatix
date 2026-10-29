@@ -4,22 +4,29 @@ import { PortalShell, type PortalConfig } from "@/components/portal/portal-shell
 import "../portal.css";
 
 export const metadata: Metadata = {
-  title: "Patient space | Healthomatix",
-  description: "Your appointments, records, and consent choices with your clinic.",
+  title: "Patient dashboard | Healthomatix",
+  description: "Your appointments, medical records, messages, and care options.",
 };
 
 const config: PortalConfig = {
   kind: "patient",
-  heading: "YOUR SPACE",
+  heading: "PATIENT",
   nav: [
-    { label: "Home", href: "/patient", icon: "home" },
-    { label: "Book care", href: "/patient/care", icon: "plus" },
+    { label: "Dashboard", href: "/patient", icon: "home" },
     { label: "Appointments", href: "/patient/appointments", icon: "calendar" },
-    { label: "Records", href: "/patient/records", icon: "file" },
+    { label: "Medical Records", href: "/patient/records", icon: "file" },
     { label: "Messages", href: "/patient/messages", icon: "message" },
-    { label: "Profile & consent", href: "/patient/profile", icon: "shield" },
+    { label: "Care", href: "/patient/care", icon: "stethoscope" },
+    { label: "Profile", href: "/patient/profile", icon: "shield" },
   ],
   secondary: [
+    { label: "Waiting room", href: "/patient/waiting-room" },
+    { label: "Visit summary", href: "/patient/visit-summary" },
+    { label: "Care activities", href: "/patient/care-tasks" },
+    { label: "Education", href: "/patient/education" },
+    { label: "Health Timeline", href: "/patient/timeline" },
+    { label: "Health trends", href: "/patient/trends" },
+    { label: "Data export", href: "/patient/export" },
     { label: "Connect another clinic", href: "/patient/join" },
     { label: "Go to clinic workspace", href: "/clinic" },
   ],

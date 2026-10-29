@@ -17,6 +17,7 @@ import {
   useToast,
 } from "@/components/ui";
 import { api, call, callOptional, useApiQuery, type ApiProblem, type Schemas } from "@/lib/api";
+import { apiJson } from "@/lib/fhir";
 import { formatDate, formatDateTime, isFuture } from "@/lib/time";
 
 type Consent = Schemas["ConsentRead"];
@@ -28,16 +29,25 @@ type Consent = Schemas["ConsentRead"];
 const CONSENT_POLICY_VERSION = process.env.NEXT_PUBLIC_CONSENT_POLICY_VERSION ?? "";
 const CONSENT_OPTIONS = [
   {
+    purpose: "treatment",
+    scope: "chart.read",
+    title: "Allow my clinicians to view my chart",
+    detail: "Gates clinician access to Observations and documents under FHIR Consent.",
+    reveals: ["Visit summaries", "Lab histories", "DocumentRead (consent-scoped)"],
+  },
+  {
     purpose: "care_coordination",
     scope: "clinic_care_team",
     title: "Share my information with my care team",
     detail: "Lets providers at this clinic who are involved in your care see the information you've shared.",
+    reveals: ["Care-team MemberRead", "Shared AppointmentRead", "Coordination notes"],
   },
   {
     purpose: "appointment_communication",
     scope: "contact_details",
     title: "Contact me about my appointments",
     detail: "Lets the clinic use your contact details for appointment confirmations and changes.",
+    reveals: ["Phone / email for reminders", "Schedule change notices"],
   },
 ] as const;
 
@@ -94,6 +104,14 @@ export default function ProfilePage() {
       setForm({ preferred_name, legal_name, phone, preferred_language });
     }
   }, [profile.state]);
+
+  useEffect(() => {
+    // Ensure a FHIR Patient exists for consent-gated chart linkage.
+    void apiJson(`/api/v1/fhir/R4/tenants/${tenant_id}/Patient/$ensure`, {
+      method: "POST",
+      body: "{}",
+    });
+  }, [tenant_id]);
 
   async function saveProfile(event: FormEvent) {
     event.preventDefault();
@@ -233,32 +251,50 @@ export default function ProfilePage() {
       >
         <FormError problem={consentProblem} />
         {CONSENT_POLICY_VERSION ? (
-          <div className="consent-options">
-            {CONSENT_OPTIONS.map((option) => {
-              const active = activePurposes.has(option.purpose);
-              return (
-                <div className="consent-option app-card" key={option.purpose}>
-                  <div>
-                    <h3 className="card-title">{option.title}</h3>
-                    <p className="card-copy">{option.detail}</p>
+          <>
+            <div className="consent-options">
+              {CONSENT_OPTIONS.map((option) => {
+                const active = activePurposes.has(option.purpose);
+                return (
+                  <div className="consent-option app-card" key={option.purpose}>
+                    <div>
+                      <h3 className="card-title">{option.title}</h3>
+                      <p className="card-copy">{option.detail}</p>
+                      <ul className="consent-scope-chips" aria-label="Data scopes">
+                        {option.reveals.map((item) => (
+                          <li key={item} className={active ? "is-shared" : "is-restricted"}>
+                            {active ? "Shared" : "Restricted"} · {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    {active ? (
+                      <StatusBadge status="active">Granted</StatusBadge>
+                    ) : (
+                      <button
+                        className="button button-small"
+                        type="button"
+                        onClick={() => grant(option)}
+                        disabled={granting !== null || consents.state.status !== "success"}
+                        aria-busy={granting === option.purpose}
+                      >
+                        {granting === option.purpose ? "Saving…" : "Give consent"}
+                      </button>
+                    )}
                   </div>
-                  {active ? (
-                    <StatusBadge status="active">Granted</StatusBadge>
-                  ) : (
-                    <button
-                      className="button button-small"
-                      type="button"
-                      onClick={() => grant(option)}
-                      disabled={granting !== null || consents.state.status !== "success"}
-                      aria-busy={granting === option.purpose}
-                    >
-                      {granting === option.purpose ? "Saving…" : "Give consent"}
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            <div className="consent-payload-preview" aria-live="polite">
+              <p className="section-kicker">Privacy in the payload</p>
+              <strong>Currently shared scopes</strong>
+              <p>
+                {activePurposes.size
+                  ? `Active purposes: ${[...activePurposes].join(", ").replaceAll("_", " ")}. Restricted purposes omit their resources from clinic reads.`
+                  : "No active grants — clinic chart and contact scopes stay restricted."}
+              </p>
+            </div>
+          </>
         ) : (
           <Notice title="Consent forms aren't published yet">
             {tenant_name} hasn&apos;t published its consent policy online. You can still review and withdraw any consent

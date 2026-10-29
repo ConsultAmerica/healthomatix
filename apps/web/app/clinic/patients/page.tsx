@@ -11,7 +11,7 @@ import { formatDate, shortId } from "@/lib/time";
 
 export default function PatientsPage() {
   return (
-    <RoleGate roles={["tenant_admin", "staff"]}>
+    <RoleGate roles={["tenant_admin", "staff", "provider"]}>
       <Patients />
     </RoleGate>
   );

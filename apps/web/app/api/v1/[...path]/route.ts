@@ -29,10 +29,7 @@ async function proxy(request: NextRequest, context: ProxyContext) {
   const { path } = await context.params;
   const joined = path.join("/");
 
-  // Platform administration is a separate, restricted surface.
-  if (path[0] === "platform") {
-    return problem(404, "NOT_FOUND", "Not found.");
-  }
+  // Platform routes are proxied; FastAPI enforces PLATFORM_ADMIN_IDENTITIES / MFA.
   const mutating = !["GET", "HEAD"].includes(request.method);
   if (mutating && (!isSameOrigin(request) || request.headers.get(CSRF_HEADER) !== "1")) {
     return problem(403, "CSRF_REJECTED", "This request could not be verified. Reload the page and try again.");

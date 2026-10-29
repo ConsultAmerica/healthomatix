@@ -21,6 +21,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/fhir/R4/tenants/{tenant_id}/Patient/$ensure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ensure My Patient */
+        post: operations["ensure_my_patient_api_v1_fhir_R4_tenants__tenant_id__Patient__ensure_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fhir/R4/tenants/{tenant_id}/{resource_type}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Fhir Resources */
+        get: operations["search_fhir_resources_api_v1_fhir_R4_tenants__tenant_id___resource_type__get"];
+        put?: never;
+        /** Create Fhir Resource */
+        post: operations["create_fhir_resource_api_v1_fhir_R4_tenants__tenant_id___resource_type__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fhir/R4/tenants/{tenant_id}/{resource_type}/{resource_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Fhir Resource */
+        get: operations["read_fhir_resource_api_v1_fhir_R4_tenants__tenant_id___resource_type___resource_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -229,6 +281,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tenants/{tenant_id}/documents/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Document */
+        delete: operations["delete_document_api_v1_tenants__tenant_id__documents__document_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tenants/{tenant_id}/documents/{document_id}/content": {
         parameters: {
             query?: never;
@@ -238,6 +307,134 @@ export interface paths {
         };
         /** Download Document */
         get: operations["download_document_api_v1_tenants__tenant_id__documents__document_id__content_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/documents/{document_id}/extractions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Extraction */
+        post: operations["create_extraction_api_v1_tenants__tenant_id__documents__document_id__extractions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Drafts */
+        get: operations["list_drafts_api_v1_tenants__tenant_id__drafts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/drafts/{draft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Draft */
+        get: operations["get_draft_api_v1_tenants__tenant_id__drafts__draft_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/drafts/{draft_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve Draft
+         * @description Hard gate: only approval writes Composition/Task into Clinical Records.
+         */
+        post: operations["approve_draft_api_v1_tenants__tenant_id__drafts__draft_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/extractions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Extractions
+         * @description List extractions for one patient. patient_id is required (consent-scoped).
+         */
+        get: operations["list_extractions_api_v1_tenants__tenant_id__extractions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/extractions/{extraction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Extraction */
+        get: operations["get_extraction_api_v1_tenants__tenant_id__extractions__extraction_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Insights
+         * @description Educational AI change flags — never diagnostic.
+         */
+        get: operations["get_insights_api_v1_tenants__tenant_id__insights_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -299,6 +496,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tenants/{tenant_id}/locations/{location_id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Deactivate Location */
+        post: operations["deactivate_location_api_v1_tenants__tenant_id__locations__location_id__deactivate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tenants/{tenant_id}/members": {
         parameters: {
             query?: never;
@@ -310,6 +524,40 @@ export interface paths {
         get: operations["list_members_api_v1_tenants__tenant_id__members_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/members/{user_id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Deactivate Member */
+        post: operations["deactivate_member_api_v1_tenants__tenant_id__members__user_id__deactivate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Visit Note Draft */
+        post: operations["create_visit_note_draft_api_v1_tenants__tenant_id__notes_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -417,7 +665,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update Clinic Patient */
+        patch: operations["update_clinic_patient_api_v1_tenants__tenant_id__patients__clinic_patient_id__patch"];
         trace?: never;
     };
     "/api/v1/tenants/{tenant_id}/patients/{clinic_patient_id}/documents": {
@@ -490,6 +739,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tenants/{tenant_id}/providers/me/availability/{availability_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Withdraw Provider Availability */
+        delete: operations["withdraw_provider_availability_api_v1_tenants__tenant_id__providers_me_availability__availability_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tenants/{tenant_id}/providers/me/credentials": {
         parameters: {
             query?: never;
@@ -525,6 +791,111 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tenants/{tenant_id}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Session */
+        post: operations["create_session_api_v1_tenants__tenant_id__sessions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/sessions/{session_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Session */
+        get: operations["read_session_api_v1_tenants__tenant_id__sessions__session_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/sessions/{session_id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete Session
+         * @description Clinician ends the visit, records follow-up, and writes a FHIR Encounter.
+         */
+        post: operations["complete_session_api_v1_tenants__tenant_id__sessions__session_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/sessions/{session_id}/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Join Session */
+        post: operations["join_session_api_v1_tenants__tenant_id__sessions__session_id__join_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/summaries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Previsit Summary */
+        post: operations["create_previsit_summary_api_v1_tenants__tenant_id__summaries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Follow Up Task Draft */
+        post: operations["create_follow_up_task_draft_api_v1_tenants__tenant_id__tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tenants/{tenant_id}/threads": {
         parameters: {
             query?: never;
@@ -543,6 +914,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tenants/{tenant_id}/threads/{thread_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close Thread */
+        post: operations["close_thread_api_v1_tenants__tenant_id__threads__thread_id__close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tenants/{tenant_id}/threads/{thread_id}/messages": {
         parameters: {
             query?: never;
@@ -555,6 +943,63 @@ export interface paths {
         put?: never;
         /** Post Message */
         post: operations["post_message_api_v1_tenants__tenant_id__threads__thread_id__messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/trend-tests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Trend Tests
+         * @description Catalog of supported tests. Pass patient_id to annotate counts (consent-gated).
+         */
+        get: operations["list_trend_tests_api_v1_tenants__tenant_id__trend_tests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/trends": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trends */
+        get: operations["get_trends_api_v1_tenants__tenant_id__trends_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tenants/{tenant_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify Extraction
+         * @description Human verification promotes extraction fields to FHIR Observations.
+         */
+        post: operations["verify_extraction_api_v1_tenants__tenant_id__verify_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -596,6 +1041,10 @@ export interface components {
             provider_name: string;
             /** Provider User Id */
             provider_user_id: string;
+            /** Session Id */
+            session_id?: string | null;
+            /** Session Status */
+            session_status?: string | null;
             /**
              * Starts At
              * Format: date-time
@@ -657,6 +1106,11 @@ export interface components {
             /** File */
             file: string;
         };
+        /** ChartNumberWrite */
+        ChartNumberWrite: {
+            /** Chart Number */
+            chart_number?: string | null;
+        };
         /** ClinicOnboardingWrite */
         ClinicOnboardingWrite: {
             /** Display Name */
@@ -670,7 +1124,7 @@ export interface components {
         };
         /**
          * ClinicPatientDetailRead
-         * @description Roster-safe detail. No chart PHI beyond clinic-assigned identifiers.
+         * @description Roster-safe detail plus FHIR Patient id for consent-gated chart views.
          */
         ClinicPatientDetailRead: {
             /** Chart Number */
@@ -692,6 +1146,8 @@ export interface components {
              * @default 0
              */
             open_thread_count: number;
+            /** Patient User Id */
+            patient_user_id: string;
             /** Status */
             status: string;
             /**
@@ -730,6 +1186,50 @@ export interface components {
             tenant_id: string;
             /** Timezone */
             timezone: string;
+        };
+        /** ClinicalDraftApproveWrite */
+        ClinicalDraftApproveWrite: {
+            /** Edited Content */
+            edited_content?: Record<string, never> | null;
+            /** Edited Title */
+            edited_title?: string | null;
+        };
+        /** ClinicalDraftCreate */
+        ClinicalDraftCreate: {
+            /** Patient Id */
+            patient_id: string;
+            /** Session Id */
+            session_id?: string | null;
+        };
+        /** ClinicalDraftRead */
+        ClinicalDraftRead: {
+            /** Approved At */
+            approved_at?: string | null;
+            /** Approved Resource Id */
+            approved_resource_id?: string | null;
+            /** Content */
+            content: Record<string, never>;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Draft Id */
+            draft_id: string;
+            /** Draft Type */
+            draft_type: string;
+            /** Encounter Id */
+            encounter_id?: string | null;
+            /** Patient Id */
+            patient_id: string;
+            /** Session Id */
+            session_id?: string | null;
+            /** Source Links */
+            source_links: Record<string, never>[];
+            /** Status */
+            status: string;
+            /** Title */
+            title: string;
         };
         /** ConsentRead */
         ConsentRead: {
@@ -847,6 +1347,8 @@ export interface components {
             created_at: string;
             /** Document Id */
             document_id: string;
+            /** Document Reference Id */
+            document_reference_id?: string | null;
             /** Lifecycle State */
             lifecycle_state: string;
             /** Original Filename */
@@ -854,10 +1356,86 @@ export interface components {
             /** Size Bytes */
             size_bytes: number;
         };
+        /** ExtractionFieldRead */
+        ExtractionFieldRead: {
+            /** Confidence */
+            confidence: number;
+            /**
+             * Effective Date
+             * @default
+             */
+            effective_date: string;
+            /** Name */
+            name: string;
+            /**
+             * Reference Range
+             * @default
+             */
+            reference_range: string;
+            /** Source Region */
+            source_region?: Record<string, never>;
+            /**
+             * Unit
+             * @default
+             */
+            unit: string;
+            /** Value */
+            value: string;
+        };
+        /** ExtractionRead */
+        ExtractionRead: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Document Id */
+            document_id: string;
+            /** Document Reference Id */
+            document_reference_id?: string | null;
+            /** Extraction Id */
+            extraction_id: string;
+            /** Fields */
+            fields: components["schemas"]["ExtractionFieldRead"][];
+            /**
+             * Ocr Text
+             * @default
+             */
+            ocr_text: string;
+            /** Patient Id */
+            patient_id: string;
+            /** Status */
+            status: string;
+            /** Verified At */
+            verified_at?: string | null;
+        };
+        /** ExtractionVerifyWrite */
+        ExtractionVerifyWrite: {
+            /** Extraction Id */
+            extraction_id: string;
+            /** Fields */
+            fields: components["schemas"]["ExtractionFieldRead"][];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** InsightFlagRead */
+        InsightFlagRead: {
+            /** Code */
+            code: string;
+            /** Explanation */
+            explanation: string;
+            /**
+             * Framing
+             * @default educational_support_for_clinician_discussion
+             */
+            framing: string;
+            /** Severity */
+            severity: string;
+            /** Title */
+            title: string;
         };
         /** InvitationAcceptWrite */
         InvitationAcceptWrite: {
@@ -959,6 +1537,8 @@ export interface components {
             created_at: string;
             /** Message Id */
             message_id: string;
+            /** Sender Role */
+            sender_role?: string | null;
             /** Sender User Id */
             sender_user_id: string;
             /** Thread Id */
@@ -1081,6 +1661,88 @@ export interface components {
              */
             specialty: string;
         };
+        /** SessionCompleteWrite */
+        SessionCompleteWrite: {
+            /**
+             * Follow Up Plan
+             * @default
+             */
+            follow_up_plan: string;
+        };
+        /** SessionCreate */
+        SessionCreate: {
+            /** Appointment Id */
+            appointment_id: string;
+        };
+        /** SessionJoinRead */
+        SessionJoinRead: {
+            /** Appointment Id */
+            appointment_id: string;
+            /** Clinic Patient Id */
+            clinic_patient_id: string;
+            /** Encounter Id */
+            encounter_id?: string | null;
+            /** Expires In Seconds */
+            expires_in_seconds: number;
+            /**
+             * Follow Up Plan
+             * @default
+             */
+            follow_up_plan: string;
+            /** Join Url */
+            join_url: string;
+            /** Patient User Id */
+            patient_user_id: string;
+            /** Provider User Id */
+            provider_user_id: string;
+            /** Role */
+            role: string;
+            /** Room Id */
+            room_id: string;
+            /** Session Id */
+            session_id: string;
+            /** Status */
+            status: string;
+            /** Token */
+            token: string;
+            /** Video Provider */
+            video_provider: string;
+        };
+        /** SessionRead */
+        SessionRead: {
+            /** Appointment Id */
+            appointment_id: string;
+            /** Clinic Patient Id */
+            clinic_patient_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Encounter Id */
+            encounter_id?: string | null;
+            /** Ended At */
+            ended_at?: string | null;
+            /**
+             * Follow Up Plan
+             * @default
+             */
+            follow_up_plan: string;
+            /** Patient User Id */
+            patient_user_id: string;
+            /** Provider User Id */
+            provider_user_id: string;
+            /** Room Id */
+            room_id: string;
+            /** Session Id */
+            session_id: string;
+            /** Started At */
+            started_at?: string | null;
+            /** Status */
+            status: string;
+            /** Video Provider */
+            video_provider: string;
+        };
         /** SupportAccessRequestRead */
         SupportAccessRequestRead: {
             /**
@@ -1124,6 +1786,8 @@ export interface components {
         ThreadCreate: {
             /** Body */
             body: string;
+            /** Clinic Patient Id */
+            clinic_patient_id?: string | null;
             /** Subject */
             subject: string;
         };
@@ -1149,6 +1813,119 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** TrendInsightsRead */
+        TrendInsightsRead: {
+            /** Disclaimer */
+            disclaimer: string;
+            /** Flags */
+            flags: components["schemas"]["InsightFlagRead"][];
+            /** Patient Id */
+            patient_id: string;
+            /**
+             * Point Count
+             * @default 0
+             */
+            point_count: number;
+            /** Test Code */
+            test_code: string;
+            /** Test Label */
+            test_label: string;
+        };
+        /** TrendPointRead */
+        TrendPointRead: {
+            /** Document Reference Id */
+            document_reference_id?: string | null;
+            /** Effective At */
+            effective_at: string;
+            /** Extraction Id */
+            extraction_id?: string | null;
+            /** In Range */
+            in_range?: boolean | null;
+            /** Observation Id */
+            observation_id: string;
+            /** Reference High */
+            reference_high?: number | null;
+            /** Reference Low */
+            reference_low?: number | null;
+            /**
+             * Reference Range Text
+             * @default
+             */
+            reference_range_text: string;
+            /**
+             * Status
+             * @default final
+             */
+            status: string;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: number;
+        };
+        /** TrendSeriesRead */
+        TrendSeriesRead: {
+            /** Delta */
+            delta?: number | null;
+            /** Delta Pct */
+            delta_pct?: number | null;
+            /** Latest At */
+            latest_at?: string | null;
+            /** Latest Value */
+            latest_value?: number | null;
+            /** Max Value */
+            max_value?: number | null;
+            /** Min Value */
+            min_value?: number | null;
+            /** Patient Id */
+            patient_id: string;
+            /**
+             * Point Count
+             * @default 0
+             */
+            point_count: number;
+            /** Points */
+            points: components["schemas"]["TrendPointRead"][];
+            /** Previous Value */
+            previous_value?: number | null;
+            /** Reference High */
+            reference_high?: number | null;
+            /** Reference Low */
+            reference_low?: number | null;
+            /**
+             * Reference Range Text
+             * @default
+             */
+            reference_range_text: string;
+            /** Test Code */
+            test_code: string;
+            /** Test Label */
+            test_label: string;
+            /** Unit */
+            unit: string;
+        };
+        /** TrendTestRead */
+        TrendTestRead: {
+            /** Code */
+            code: string;
+            /**
+             * Has Data
+             * @default false
+             */
+            has_data: boolean;
+            /** Label */
+            label: string;
+            /** Latest At */
+            latest_at?: string | null;
+            /** Latest Value */
+            latest_value?: number | null;
+            /**
+             * Point Count
+             * @default 0
+             */
+            point_count: number;
+            /** Unit */
+            unit: string;
         };
         /** UserRead */
         UserRead: {
@@ -1197,6 +1974,141 @@ export interface operations {
                     "application/json": {
                         [key: string]: boolean;
                     };
+                };
+            };
+        };
+    };
+    ensure_my_patient_api_v1_fhir_R4_tenants__tenant_id__Patient__ensure_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_fhir_resources_api_v1_fhir_R4_tenants__tenant_id___resource_type__get: {
+        parameters: {
+            query?: {
+                /** @description Patient id or Patient/id */
+                patient?: string | null;
+            };
+            header?: never;
+            path: {
+                tenant_id: string;
+                resource_type: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_fhir_resource_api_v1_fhir_R4_tenants__tenant_id___resource_type__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                resource_type: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_fhir_resource_api_v1_fhir_R4_tenants__tenant_id___resource_type___resource_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                resource_type: string;
+                resource_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1687,6 +2599,36 @@ export interface operations {
             };
         };
     };
+    delete_document_api_v1_tenants__tenant_id__documents__document_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     download_document_api_v1_tenants__tenant_id__documents__document_id__content_get: {
         parameters: {
             query?: never;
@@ -1706,6 +2648,241 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_extraction_api_v1_tenants__tenant_id__documents__document_id__extractions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_drafts_api_v1_tenants__tenant_id__drafts_get: {
+        parameters: {
+            query: {
+                patient_id: string;
+                draft_type?: string | null;
+                status?: string | null;
+            };
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalDraftRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_draft_api_v1_tenants__tenant_id__drafts__draft_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalDraftRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_draft_api_v1_tenants__tenant_id__drafts__draft_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClinicalDraftApproveWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalDraftRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_extractions_api_v1_tenants__tenant_id__extractions_get: {
+        parameters: {
+            query: {
+                patient_id: string;
+                document_id?: string | null;
+            };
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_extraction_api_v1_tenants__tenant_id__extractions__extraction_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                extraction_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_insights_api_v1_tenants__tenant_id__insights_get: {
+        parameters: {
+            query: {
+                code: string;
+                patient_id?: string | null;
+            };
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrendInsightsRead"];
                 };
             };
             /** @description Validation Error */
@@ -1881,6 +3058,38 @@ export interface operations {
             };
         };
     };
+    deactivate_location_api_v1_tenants__tenant_id__locations__location_id__deactivate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                location_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_members_api_v1_tenants__tenant_id__members_get: {
         parameters: {
             query?: never;
@@ -1899,6 +3108,73 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MemberRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deactivate_member_api_v1_tenants__tenant_id__members__user_id__deactivate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_visit_note_draft_api_v1_tenants__tenant_id__notes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClinicalDraftCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalDraftRead"];
                 };
             };
             /** @description Validation Error */
@@ -2174,6 +3450,42 @@ export interface operations {
             };
         };
     };
+    update_clinic_patient_api_v1_tenants__tenant_id__patients__clinic_patient_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                clinic_patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChartNumberWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicPatientDetailRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_patient_documents_for_clinic_api_v1_tenants__tenant_id__patients__clinic_patient_id__documents_get: {
         parameters: {
             query?: never;
@@ -2374,6 +3686,36 @@ export interface operations {
             };
         };
     };
+    withdraw_provider_availability_api_v1_tenants__tenant_id__providers_me_availability__availability_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                availability_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_own_provider_credentials_api_v1_tenants__tenant_id__providers_me_credentials_get: {
         parameters: {
             query?: never;
@@ -2477,9 +3819,216 @@ export interface operations {
             };
         };
     };
-    list_threads_api_v1_tenants__tenant_id__threads_get: {
+    create_session_api_v1_tenants__tenant_id__sessions_post: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SessionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_session_api_v1_tenants__tenant_id__sessions__session_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_session_api_v1_tenants__tenant_id__sessions__session_id__complete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SessionCompleteWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    join_session_api_v1_tenants__tenant_id__sessions__session_id__join_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionJoinRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_previsit_summary_api_v1_tenants__tenant_id__summaries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClinicalDraftCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalDraftRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_follow_up_task_draft_api_v1_tenants__tenant_id__tasks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClinicalDraftCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalDraftRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_threads_api_v1_tenants__tenant_id__threads_get: {
+        parameters: {
+            query?: {
+                clinic_patient_id?: string | null;
+            };
             header?: never;
             path: {
                 tenant_id: string;
@@ -2525,6 +4074,38 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_thread_api_v1_tenants__tenant_id__threads__thread_id__close_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2598,6 +4179,113 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MessageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_trend_tests_api_v1_tenants__tenant_id__trend_tests_get: {
+        parameters: {
+            query?: {
+                patient_id?: string | null;
+            };
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrendTestRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_trends_api_v1_tenants__tenant_id__trends_get: {
+        parameters: {
+            query: {
+                /** @description Test code, e.g. glucose */
+                code: string;
+                patient_id?: string | null;
+                /** @description Inclusive ISO start */
+                date_from?: string | null;
+                /** @description Inclusive ISO end */
+                date_to?: string | null;
+            };
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrendSeriesRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_extraction_api_v1_tenants__tenant_id__verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tenant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtractionVerifyWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
                 };
             };
             /** @description Validation Error */

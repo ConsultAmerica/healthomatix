@@ -59,6 +59,28 @@
             "title": "Provider User Id",
             "type": "string"
           },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "session_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Status"
+          },
           "starts_at": {
             "format": "date-time",
             "title": "Starts At",
@@ -203,6 +225,25 @@
         "title": "Body_upload_document_api_v1_tenants__tenant_id__documents_post",
         "type": "object"
       },
+      "ChartNumberWrite": {
+        "additionalProperties": false,
+        "properties": {
+          "chart_number": {
+            "anyOf": [
+              {
+                "maxLength": 96,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chart Number"
+          }
+        },
+        "title": "ChartNumberWrite",
+        "type": "object"
+      },
       "ClinicOnboardingWrite": {
         "additionalProperties": false,
         "properties": {
@@ -243,7 +284,7 @@
       },
       "ClinicPatientDetailRead": {
         "additionalProperties": false,
-        "description": "Roster-safe detail. No chart PHI beyond clinic-assigned identifiers.",
+        "description": "Roster-safe detail plus FHIR Patient id for consent-gated chart views.",
         "properties": {
           "chart_number": {
             "anyOf": [
@@ -275,6 +316,10 @@
             "title": "Open Thread Count",
             "type": "integer"
           },
+          "patient_user_id": {
+            "title": "Patient User Id",
+            "type": "string"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -289,7 +334,8 @@
           "clinic_patient_id",
           "chart_number",
           "status",
-          "created_at"
+          "created_at",
+          "patient_user_id"
         ],
         "title": "ClinicPatientDetailRead",
         "type": "object"
@@ -373,6 +419,163 @@
           "timezone"
         ],
         "title": "ClinicRead",
+        "type": "object"
+      },
+      "ClinicalDraftApproveWrite": {
+        "additionalProperties": false,
+        "properties": {
+          "edited_content": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited Content"
+          },
+          "edited_title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited Title"
+          }
+        },
+        "title": "ClinicalDraftApproveWrite",
+        "type": "object"
+      },
+      "ClinicalDraftCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "patient_id": {
+            "maxLength": 36,
+            "minLength": 36,
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 36,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          }
+        },
+        "required": [
+          "patient_id"
+        ],
+        "title": "ClinicalDraftCreate",
+        "type": "object"
+      },
+      "ClinicalDraftRead": {
+        "additionalProperties": false,
+        "properties": {
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "approved_resource_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved Resource Id"
+          },
+          "content": {
+            "title": "Content",
+            "type": "object"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "draft_id": {
+            "title": "Draft Id",
+            "type": "string"
+          },
+          "draft_type": {
+            "title": "Draft Type",
+            "type": "string"
+          },
+          "encounter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encounter Id"
+          },
+          "patient_id": {
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "source_links": {
+            "items": {
+              "type": "object"
+            },
+            "title": "Source Links",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "draft_id",
+          "patient_id",
+          "draft_type",
+          "status",
+          "title",
+          "content",
+          "source_links",
+          "created_at"
+        ],
+        "title": "ClinicalDraftRead",
         "type": "object"
       },
       "ConsentRead": {
@@ -700,6 +903,17 @@
             "title": "Document Id",
             "type": "string"
           },
+          "document_reference_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Reference Id"
+          },
           "lifecycle_state": {
             "title": "Lifecycle State",
             "type": "string"
@@ -724,6 +938,144 @@
         "title": "DocumentRead",
         "type": "object"
       },
+      "ExtractionFieldRead": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "effective_date": {
+            "default": "",
+            "title": "Effective Date",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reference_range": {
+            "default": "",
+            "title": "Reference Range",
+            "type": "string"
+          },
+          "source_region": {
+            "title": "Source Region",
+            "type": "object"
+          },
+          "unit": {
+            "default": "",
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value",
+          "confidence"
+        ],
+        "title": "ExtractionFieldRead",
+        "type": "object"
+      },
+      "ExtractionRead": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "document_reference_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Reference Id"
+          },
+          "extraction_id": {
+            "title": "Extraction Id",
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractionFieldRead"
+            },
+            "title": "Fields",
+            "type": "array"
+          },
+          "ocr_text": {
+            "default": "",
+            "title": "Ocr Text",
+            "type": "string"
+          },
+          "patient_id": {
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified At"
+          }
+        },
+        "required": [
+          "extraction_id",
+          "document_id",
+          "patient_id",
+          "status",
+          "fields",
+          "created_at"
+        ],
+        "title": "ExtractionRead",
+        "type": "object"
+      },
+      "ExtractionVerifyWrite": {
+        "additionalProperties": false,
+        "properties": {
+          "extraction_id": {
+            "maxLength": 36,
+            "minLength": 36,
+            "title": "Extraction Id",
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractionFieldRead"
+            },
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "extraction_id",
+          "fields"
+        ],
+        "title": "ExtractionVerifyWrite",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -735,6 +1087,40 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "InsightFlagRead": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "framing": {
+            "default": "educational_support_for_clinician_discussion",
+            "title": "Framing",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "severity",
+          "title",
+          "explanation"
+        ],
+        "title": "InsightFlagRead",
         "type": "object"
       },
       "InvitationAcceptWrite": {
@@ -972,6 +1358,17 @@
             "title": "Message Id",
             "type": "string"
           },
+          "sender_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sender Role"
+          },
           "sender_user_id": {
             "title": "Sender User Id",
             "type": "string"
@@ -1204,6 +1601,215 @@
         "title": "ProviderProfileWrite",
         "type": "object"
       },
+      "SessionCompleteWrite": {
+        "additionalProperties": false,
+        "properties": {
+          "follow_up_plan": {
+            "default": "",
+            "maxLength": 4000,
+            "title": "Follow Up Plan",
+            "type": "string"
+          }
+        },
+        "title": "SessionCompleteWrite",
+        "type": "object"
+      },
+      "SessionCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment_id": {
+            "maxLength": 36,
+            "minLength": 36,
+            "title": "Appointment Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "appointment_id"
+        ],
+        "title": "SessionCreate",
+        "type": "object"
+      },
+      "SessionJoinRead": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment_id": {
+            "title": "Appointment Id",
+            "type": "string"
+          },
+          "clinic_patient_id": {
+            "title": "Clinic Patient Id",
+            "type": "string"
+          },
+          "encounter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encounter Id"
+          },
+          "expires_in_seconds": {
+            "title": "Expires In Seconds",
+            "type": "integer"
+          },
+          "follow_up_plan": {
+            "default": "",
+            "title": "Follow Up Plan",
+            "type": "string"
+          },
+          "join_url": {
+            "title": "Join Url",
+            "type": "string"
+          },
+          "patient_user_id": {
+            "title": "Patient User Id",
+            "type": "string"
+          },
+          "provider_user_id": {
+            "title": "Provider User Id",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "room_id": {
+            "title": "Room Id",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "video_provider": {
+            "title": "Video Provider",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "appointment_id",
+          "status",
+          "video_provider",
+          "room_id",
+          "role",
+          "token",
+          "join_url",
+          "expires_in_seconds",
+          "patient_user_id",
+          "provider_user_id",
+          "clinic_patient_id"
+        ],
+        "title": "SessionJoinRead",
+        "type": "object"
+      },
+      "SessionRead": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment_id": {
+            "title": "Appointment Id",
+            "type": "string"
+          },
+          "clinic_patient_id": {
+            "title": "Clinic Patient Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "encounter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encounter Id"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "follow_up_plan": {
+            "default": "",
+            "title": "Follow Up Plan",
+            "type": "string"
+          },
+          "patient_user_id": {
+            "title": "Patient User Id",
+            "type": "string"
+          },
+          "provider_user_id": {
+            "title": "Provider User Id",
+            "type": "string"
+          },
+          "room_id": {
+            "title": "Room Id",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "video_provider": {
+            "title": "Video Provider",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "appointment_id",
+          "status",
+          "video_provider",
+          "room_id",
+          "patient_user_id",
+          "provider_user_id",
+          "clinic_patient_id",
+          "created_at"
+        ],
+        "title": "SessionRead",
+        "type": "object"
+      },
       "SupportAccessRequestRead": {
         "additionalProperties": false,
         "properties": {
@@ -1300,6 +1906,19 @@
             "title": "Body",
             "type": "string"
           },
+          "clinic_patient_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 36,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clinic Patient Id"
+          },
           "subject": {
             "maxLength": 200,
             "minLength": 2,
@@ -1358,6 +1977,344 @@
           "message_count"
         ],
         "title": "ThreadRead",
+        "type": "object"
+      },
+      "TrendInsightsRead": {
+        "additionalProperties": false,
+        "properties": {
+          "disclaimer": {
+            "title": "Disclaimer",
+            "type": "string"
+          },
+          "flags": {
+            "items": {
+              "$ref": "#/components/schemas/InsightFlagRead"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "patient_id": {
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "point_count": {
+            "default": 0,
+            "title": "Point Count",
+            "type": "integer"
+          },
+          "test_code": {
+            "title": "Test Code",
+            "type": "string"
+          },
+          "test_label": {
+            "title": "Test Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patient_id",
+          "test_code",
+          "test_label",
+          "flags",
+          "disclaimer"
+        ],
+        "title": "TrendInsightsRead",
+        "type": "object"
+      },
+      "TrendPointRead": {
+        "additionalProperties": false,
+        "properties": {
+          "document_reference_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Reference Id"
+          },
+          "effective_at": {
+            "title": "Effective At",
+            "type": "string"
+          },
+          "extraction_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Id"
+          },
+          "in_range": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Range"
+          },
+          "observation_id": {
+            "title": "Observation Id",
+            "type": "string"
+          },
+          "reference_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference High"
+          },
+          "reference_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Low"
+          },
+          "reference_range_text": {
+            "default": "",
+            "title": "Reference Range Text",
+            "type": "string"
+          },
+          "status": {
+            "default": "final",
+            "title": "Status",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "observation_id",
+          "effective_at",
+          "value",
+          "unit"
+        ],
+        "title": "TrendPointRead",
+        "type": "object"
+      },
+      "TrendSeriesRead": {
+        "additionalProperties": false,
+        "properties": {
+          "delta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta"
+          },
+          "delta_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta Pct"
+          },
+          "latest_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest At"
+          },
+          "latest_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Value"
+          },
+          "max_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Value"
+          },
+          "min_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Value"
+          },
+          "patient_id": {
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "point_count": {
+            "default": 0,
+            "title": "Point Count",
+            "type": "integer"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPointRead"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "previous_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Value"
+          },
+          "reference_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference High"
+          },
+          "reference_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Low"
+          },
+          "reference_range_text": {
+            "default": "",
+            "title": "Reference Range Text",
+            "type": "string"
+          },
+          "test_code": {
+            "title": "Test Code",
+            "type": "string"
+          },
+          "test_label": {
+            "title": "Test Label",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patient_id",
+          "test_code",
+          "test_label",
+          "unit",
+          "points"
+        ],
+        "title": "TrendSeriesRead",
+        "type": "object"
+      },
+      "TrendTestRead": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "has_data": {
+            "default": false,
+            "title": "Has Data",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "latest_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest At"
+          },
+          "latest_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Value"
+          },
+          "point_count": {
+            "default": 0,
+            "title": "Point Count",
+            "type": "integer"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "label",
+          "unit"
+        ],
+        "title": "TrendTestRead",
         "type": "object"
       },
       "UserRead": {
@@ -1457,6 +2414,261 @@
           }
         },
         "summary": "Auth Config"
+      }
+    },
+    "/api/v1/fhir/R4/tenants/{tenant_id}/Patient/$ensure": {
+      "post": {
+        "operationId": "ensure_my_patient_api_v1_fhir_R4_tenants__tenant_id__Patient__ensure_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Ensure My Patient Api V1 Fhir R4 Tenants  Tenant Id  Patient  Ensure Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Ensure My Patient",
+        "tags": [
+          "fhir"
+        ]
+      }
+    },
+    "/api/v1/fhir/R4/tenants/{tenant_id}/{resource_type}": {
+      "get": {
+        "operationId": "search_fhir_resources_api_v1_fhir_R4_tenants__tenant_id___resource_type__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "resource_type",
+            "required": true,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Patient id or Patient/id",
+            "in": "query",
+            "name": "patient",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Patient id or Patient/id",
+              "title": "Patient"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Search Fhir Resources Api V1 Fhir R4 Tenants  Tenant Id   Resource Type  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Search Fhir Resources",
+        "tags": [
+          "fhir"
+        ]
+      },
+      "post": {
+        "operationId": "create_fhir_resource_api_v1_fhir_R4_tenants__tenant_id___resource_type__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "resource_type",
+            "required": true,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Body",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Create Fhir Resource Api V1 Fhir R4 Tenants  Tenant Id   Resource Type  Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Fhir Resource",
+        "tags": [
+          "fhir"
+        ]
+      }
+    },
+    "/api/v1/fhir/R4/tenants/{tenant_id}/{resource_type}/{resource_id}": {
+      "get": {
+        "operationId": "read_fhir_resource_api_v1_fhir_R4_tenants__tenant_id___resource_type___resource_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "resource_type",
+            "required": true,
+            "schema": {
+              "title": "Resource Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "resource_id",
+            "required": true,
+            "schema": {
+              "title": "Resource Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Read Fhir Resource Api V1 Fhir R4 Tenants  Tenant Id   Resource Type   Resource Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Fhir Resource",
+        "tags": [
+          "fhir"
+        ]
       }
     },
     "/api/v1/health": {
@@ -2219,6 +3431,52 @@
         "summary": "Upload Document"
       }
     },
+    "/api/v1/tenants/{tenant_id}/documents/{document_id}": {
+      "delete": {
+        "operationId": "delete_document_api_v1_tenants__tenant_id__documents__document_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Document"
+      }
+    },
     "/api/v1/tenants/{tenant_id}/documents/{document_id}/content": {
       "get": {
         "operationId": "download_document_api_v1_tenants__tenant_id__documents__document_id__content_get",
@@ -2268,6 +3526,486 @@
           }
         ],
         "summary": "Download Document"
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/documents/{document_id}/extractions": {
+      "post": {
+        "operationId": "create_extraction_api_v1_tenants__tenant_id__documents__document_id__extractions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Extraction",
+        "tags": [
+          "intelligence"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/drafts": {
+      "get": {
+        "operationId": "list_drafts_api_v1_tenants__tenant_id__drafts_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "patient_id",
+            "required": true,
+            "schema": {
+              "title": "Patient Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "draft_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Draft Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "draft",
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ClinicalDraftRead"
+                  },
+                  "title": "Response List Drafts Api V1 Tenants  Tenant Id  Drafts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Drafts",
+        "tags": [
+          "clinical-ai"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/drafts/{draft_id}": {
+      "get": {
+        "operationId": "get_draft_api_v1_tenants__tenant_id__drafts__draft_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "title": "Draft Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDraftRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Draft",
+        "tags": [
+          "clinical-ai"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/drafts/{draft_id}/approve": {
+      "post": {
+        "description": "Hard gate: only approval writes Composition/Task into Clinical Records.",
+        "operationId": "approve_draft_api_v1_tenants__tenant_id__drafts__draft_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "title": "Draft Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClinicalDraftApproveWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDraftRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Approve Draft",
+        "tags": [
+          "clinical-ai"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/extractions": {
+      "get": {
+        "description": "List extractions for one patient. patient_id is required (consent-scoped).",
+        "operationId": "list_extractions_api_v1_tenants__tenant_id__extractions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "patient_id",
+            "required": true,
+            "schema": {
+              "title": "Patient Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "document_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExtractionRead"
+                  },
+                  "title": "Response List Extractions Api V1 Tenants  Tenant Id  Extractions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Extractions",
+        "tags": [
+          "intelligence"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/extractions/{extraction_id}": {
+      "get": {
+        "operationId": "get_extraction_api_v1_tenants__tenant_id__extractions__extraction_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "extraction_id",
+            "required": true,
+            "schema": {
+              "title": "Extraction Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Extraction",
+        "tags": [
+          "intelligence"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/insights": {
+      "get": {
+        "description": "Educational AI change flags \u2014 never diagnostic.",
+        "operationId": "get_insights_api_v1_tenants__tenant_id__insights_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 2,
+              "title": "Code",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "patient_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrendInsightsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Insights",
+        "tags": [
+          "trends"
+        ]
       }
     },
     "/api/v1/tenants/{tenant_id}/invitations": {
@@ -2516,6 +4254,59 @@
         "summary": "Create Location"
       }
     },
+    "/api/v1/tenants/{tenant_id}/locations/{location_id}/deactivate": {
+      "post": {
+        "operationId": "deactivate_location_api_v1_tenants__tenant_id__locations__location_id__deactivate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "location_id",
+            "required": true,
+            "schema": {
+              "title": "Location Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Deactivate Location"
+      }
+    },
     "/api/v1/tenants/{tenant_id}/members": {
       "get": {
         "operationId": "list_members_api_v1_tenants__tenant_id__members_get",
@@ -2562,6 +4353,116 @@
           }
         ],
         "summary": "List Members"
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/members/{user_id}/deactivate": {
+      "post": {
+        "operationId": "deactivate_member_api_v1_tenants__tenant_id__members__user_id__deactivate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Deactivate Member"
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/notes": {
+      "post": {
+        "operationId": "create_visit_note_draft_api_v1_tenants__tenant_id__notes_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClinicalDraftCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDraftRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Visit Note Draft",
+        "tags": [
+          "clinical-ai"
+        ]
       }
     },
     "/api/v1/tenants/{tenant_id}/patients": {
@@ -2970,6 +4871,67 @@
           }
         ],
         "summary": "Get Clinic Patient"
+      },
+      "patch": {
+        "operationId": "update_clinic_patient_api_v1_tenants__tenant_id__patients__clinic_patient_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "clinic_patient_id",
+            "required": true,
+            "schema": {
+              "title": "Clinic Patient Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChartNumberWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicPatientDetailRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Clinic Patient"
       }
     },
     "/api/v1/tenants/{tenant_id}/patients/{clinic_patient_id}/documents": {
@@ -3317,6 +5279,52 @@
         "summary": "Create Provider Availability"
       }
     },
+    "/api/v1/tenants/{tenant_id}/providers/me/availability/{availability_id}": {
+      "delete": {
+        "operationId": "withdraw_provider_availability_api_v1_tenants__tenant_id__providers_me_availability__availability_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "availability_id",
+            "required": true,
+            "schema": {
+              "title": "Availability Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Withdraw Provider Availability"
+      }
+    },
     "/api/v1/tenants/{tenant_id}/providers/me/credentials": {
       "get": {
         "operationId": "list_own_provider_credentials_api_v1_tenants__tenant_id__providers_me_credentials_get",
@@ -3489,6 +5497,356 @@
         "summary": "Review Provider Credential"
       }
     },
+    "/api/v1/tenants/{tenant_id}/sessions": {
+      "post": {
+        "operationId": "create_session_api_v1_tenants__tenant_id__sessions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Session",
+        "tags": [
+          "consultation"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/sessions/{session_id}": {
+      "get": {
+        "operationId": "read_session_api_v1_tenants__tenant_id__sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Session",
+        "tags": [
+          "consultation"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/sessions/{session_id}/complete": {
+      "post": {
+        "description": "Clinician ends the visit, records follow-up, and writes a FHIR Encounter.",
+        "operationId": "complete_session_api_v1_tenants__tenant_id__sessions__session_id__complete_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCompleteWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Complete Session",
+        "tags": [
+          "consultation"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/sessions/{session_id}/join": {
+      "post": {
+        "operationId": "join_session_api_v1_tenants__tenant_id__sessions__session_id__join_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionJoinRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Join Session",
+        "tags": [
+          "consultation"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/summaries": {
+      "post": {
+        "operationId": "create_previsit_summary_api_v1_tenants__tenant_id__summaries_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClinicalDraftCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDraftRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Previsit Summary",
+        "tags": [
+          "clinical-ai"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/tasks": {
+      "post": {
+        "operationId": "create_follow_up_task_draft_api_v1_tenants__tenant_id__tasks_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClinicalDraftCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicalDraftRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Follow Up Task Draft",
+        "tags": [
+          "clinical-ai"
+        ]
+      }
+    },
     "/api/v1/tenants/{tenant_id}/threads": {
       "get": {
         "operationId": "list_threads_api_v1_tenants__tenant_id__threads_get",
@@ -3500,6 +5858,22 @@
             "schema": {
               "title": "Tenant Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "clinic_patient_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Clinic Patient Id"
             }
           }
         ],
@@ -3587,6 +5961,59 @@
           }
         ],
         "summary": "Create Thread"
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/threads/{thread_id}/close": {
+      "post": {
+        "operationId": "close_thread_api_v1_tenants__tenant_id__threads__thread_id__close_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "thread_id",
+            "required": true,
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Close Thread"
       }
     },
     "/api/v1/tenants/{tenant_id}/threads/{thread_id}/messages": {
@@ -3705,6 +6132,245 @@
           }
         ],
         "summary": "Post Message"
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/trend-tests": {
+      "get": {
+        "description": "Catalog of supported tests. Pass patient_id to annotate counts (consent-gated).",
+        "operationId": "list_trend_tests_api_v1_tenants__tenant_id__trend_tests_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "patient_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrendTestRead"
+                  },
+                  "title": "Response List Trend Tests Api V1 Tenants  Tenant Id  Trend Tests Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Trend Tests",
+        "tags": [
+          "trends"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/trends": {
+      "get": {
+        "operationId": "get_trends_api_v1_tenants__tenant_id__trends_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Test code, e.g. glucose",
+            "in": "query",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "description": "Test code, e.g. glucose",
+              "maxLength": 64,
+              "minLength": 2,
+              "title": "Code",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "patient_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Patient Id"
+            }
+          },
+          {
+            "description": "Inclusive ISO start",
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inclusive ISO start",
+              "title": "Date From"
+            }
+          },
+          {
+            "description": "Inclusive ISO end",
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inclusive ISO end",
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrendSeriesRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Trends",
+        "tags": [
+          "trends"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/verify": {
+      "post": {
+        "description": "Human verification promotes extraction fields to FHIR Observations.",
+        "operationId": "verify_extraction_api_v1_tenants__tenant_id__verify_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtractionVerifyWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Verify Extraction Api V1 Tenants  Tenant Id  Verify Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Verify Extraction",
+        "tags": [
+          "intelligence"
+        ]
       }
     }
   }

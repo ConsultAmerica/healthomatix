@@ -9,7 +9,7 @@ export type Role = "tenant_admin" | "staff" | "provider" | "auditor" | "patient"
 export const ROLE_LABELS: Record<string, string> = {
   tenant_admin: "Clinic admin",
   staff: "Clinic staff",
-  provider: "Provider",
+  provider: "Doctor",
   auditor: "Auditor",
   patient: "Patient",
 };
@@ -19,7 +19,11 @@ const PORTAL_ROLES: Record<PortalKind, string[]> = {
   patient: ["patient"],
 };
 
-export type Features = { oidcConfigured: boolean; schedulingEnabled: boolean };
+export type Features = {
+  oidcConfigured: boolean;
+  schedulingEnabled: boolean;
+  documentStorageConfigured: boolean;
+};
 
 export type DemoInfo = { enabled: boolean; passcodeRequired: boolean; user: string | null };
 
@@ -78,10 +82,15 @@ export function PortalProvider({ kind, children }: { kind: PortalKind; children:
     let active = true;
     call(api().GET("/api/v1/auth/config")).then((result) => {
       if (active && result.ok) {
-        const config = result.data as { oidc_configured?: boolean; scheduling_enabled?: boolean };
+        const config = result.data as {
+          oidc_configured?: boolean;
+          scheduling_enabled?: boolean;
+          document_storage_configured?: boolean;
+        };
         setFeatures({
           oidcConfigured: Boolean(config.oidc_configured),
           schedulingEnabled: Boolean(config.scheduling_enabled),
+          documentStorageConfigured: Boolean(config.document_storage_configured),
         });
       }
     });

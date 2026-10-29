@@ -6,6 +6,8 @@ import { api, call, type ApiProblem } from "@/lib/api";
 import { browserTimeZone } from "@/lib/time";
 import { FormError, Notice, SelectField, SubmitButton, TextField, useToast } from "@/components/ui";
 import { DEMO_PERSONAS } from "@/lib/demo-personas";
+import { DemoSeedButton } from "./demo-seed-button";
+import { MockSsoButton } from "./mock-sso";
 import { ROLE_LABELS, usePortal, type DemoInfo, type PortalKind } from "./portal-context";
 
 const AUTH_ERRORS: Record<string, string> = {
@@ -58,6 +60,15 @@ export function SignInPanel({
           <a className="button" href={`/auth/login?returnTo=${encodeURIComponent(returnTo)}`}>
             {expired ? "Sign in again" : "Sign in"}
           </a>
+        </div>
+      )}
+      {!configured && (
+        <div className="portal-actions mock-sso-actions">
+          <MockSsoButton demoEnabled={demo.enabled} />
+          <p className="mock-sso-caption">
+            Secure browser sign-in is intentionally unconfigured. Preview how enterprise SSO and SMART on FHIR would
+            attach before using synthetic demo accounts.
+          </p>
         </div>
       )}
       {demo.enabled && <DemoSignIn kind={kind} returnTo={returnTo} passcodeRequired={demo.passcodeRequired} />}
@@ -132,6 +143,7 @@ function DemoSignIn({
 }
 
 export function NoMembership({ kind }: { kind: PortalKind }) {
+  const { demo } = usePortal();
   return (
     <div className="onboarding">
       <p className="eyebrow">WELCOME</p>
@@ -141,6 +153,19 @@ export function NoMembership({ kind }: { kind: PortalKind }) {
           ? "You're signed in but not yet part of a clinic. Create a new clinic, or join one with an invitation code from a clinic administrator."
           : "You're signed in but not yet connected to a clinic. Enter the invitation code your clinic shared with you."}
       </p>
+      {demo.enabled && (
+        <div className="app-card demo-seed-card">
+          <h2 className="card-title">Fastest path: seed the sandbox</h2>
+          <p className="card-copy">
+            One click links Clinic admin, Provider, Staff, and Patient personas to a shared demo clinic with consent,
+            a verified credential, open availability, and sample lab results on the Health Timeline.
+          </p>
+          <DemoSeedButton
+            label="Seed demo clinic"
+            redirectTo={kind === "patient" ? "/patient/timeline" : "/clinic"}
+          />
+        </div>
+      )}
       <div className={kind === "clinic" ? "onboarding-grid" : ""}>
         {kind === "clinic" && (
           <div className="app-card">

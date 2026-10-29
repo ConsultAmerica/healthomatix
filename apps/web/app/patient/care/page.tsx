@@ -1,13 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AppointmentItem } from "@/components/appointments";
 import { SlotPicker, type Slot } from "@/components/patient/slot-picker";
 import { useActiveMembership, usePortal } from "@/components/portal/portal-context";
 import { FormError, Notice, PageHeader, Section } from "@/components/ui";
 import { api, call, newIdempotencyKey, type ApiProblem, type Schemas } from "@/lib/api";
 import { formatDayHeading, formatTime, timeZoneLabel } from "@/lib/time";
+
+const STEPS = [
+  { id: "clinic", label: "Clinic" },
+  { id: "provider", label: "Provider" },
+  { id: "time", label: "Time" },
+  { id: "confirm", label: "Confirm" },
+] as const;
 
 export default function BookCarePage() {
   const { tenant_id, tenant_name } = useActiveMembership();
@@ -23,7 +30,6 @@ export default function BookCarePage() {
   function choose(slot: Slot | null) {
     setSelected(slot);
     setProblem(null);
-    // A new choice is a new booking intent; retries of the same choice reuse the key.
     setIdempotencyKey(newIdempotencyKey());
   }
 
@@ -51,6 +57,12 @@ export default function BookCarePage() {
     setBooked(result.data);
   }
 
+  const activeStep = useMemo(() => {
+    if (booked) return 4;
+    if (selected) return 3;
+    return 2;
+  }, [booked, selected]);
+
   if (!scheduling) {
     return (
       <>
@@ -66,11 +78,23 @@ export default function BookCarePage() {
     return (
       <>
         <PageHeader eyebrow="BOOKED" title="You're booked" description={`Your appointment at ${tenant_name} is confirmed.`} />
+        <ol className="booking-steps" aria-label="Booking progress">
+          {STEPS.map((step, index) => (
+            <li key={step.id} className="is-complete">
+              <span className="booking-step-index">{index + 1}</span>
+              <span>{step.label}</span>
+            </li>
+          ))}
+          <li className="is-active">
+            <span className="booking-step-index">✓</span>
+            <span>Confirmed</span>
+          </li>
+        </ol>
         <ul className="appointment-list appointment-feature">
           <AppointmentItem appointment={booked} showDate />
         </ul>
-        <Notice title="Need to change plans?">
-          You can cancel or reschedule from your appointments at any time before your visit.
+        <Notice title="Booking confirmed">
+          Availability was reserved by the server. You can cancel or reschedule from appointments before your visit.
         </Notice>
         <div className="portal-actions">
           <Link className="button button-small" href="/patient/appointments">
@@ -97,22 +121,43 @@ export default function BookCarePage() {
       <PageHeader
         eyebrow="BOOK CARE"
         title="Book an appointment"
-        description={`Choose a 30-minute visit with a verified provider at ${tenant_name}.`}
+        description={`Select clinic → provider → available time → confirm. Times come from ${tenant_name}'s published availability.`}
       />
+
+      <ol className="booking-steps" aria-label="Booking progress">
+        {STEPS.map((step, index) => {
+          const complete = index < activeStep;
+          const current = index === activeStep;
+          return (
+            <li key={step.id} className={complete ? "is-complete" : current ? "is-active" : undefined}>
+              <span className="booking-step-index">{index + 1}</span>
+              <span>{step.label}</span>
+            </li>
+          );
+        })}
+      </ol>
+
+      <Notice title="Clinic selected">
+        Booking for <strong>{tenant_name}</strong>. Switch clinics from the top bar if you belong to more than one.
+      </Notice>
 
       <FormError problem={problem} />
       <div className="booking-layout">
-        <Section title="1. Choose a time">
+        <Section title="Choose provider and time" description="Open slots are loaded from the server. Filters narrow the list; confirmation re-checks availability.">
           <SlotPicker tenantId={tenant_id} selected={selected} onSelect={choose} reloadToken={reloadToken} />
         </Section>
 
         <aside className="booking-summary app-card" aria-labelledby="summary-title">
           <h2 id="summary-title" className="card-title">
-            2. Review and confirm
+            Review and confirm
           </h2>
           {selected ? (
             <>
               <dl className="summary-list">
+                <div>
+                  <dt>Clinic</dt>
+                  <dd>{tenant_name}</dd>
+                </div>
                 <div>
                   <dt>When</dt>
                   <dd>
@@ -132,6 +177,10 @@ export default function BookCarePage() {
                     <span className="cell-sub">{timeZoneLabel(selected.timezone, new Date(selected.starts_at))}</span>
                   </dd>
                 </div>
+                <div>
+                  <dt>Type</dt>
+                  <dd>Visit</dd>
+                </div>
               </dl>
               <button
                 className="button button-full"
@@ -147,7 +196,7 @@ export default function BookCarePage() {
               </p>
             </>
           ) : (
-            <p className="muted">Pick a day and time to see the details here.</p>
+            <p className="muted">Pick a provider filter and time to review details here.</p>
           )}
         </aside>
       </div>

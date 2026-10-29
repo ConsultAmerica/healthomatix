@@ -25,13 +25,18 @@ from app.schemas import (
     SupportAccessRequestRead,
     SupportAccessRequestWrite,
 )
+from app.security_hardening import enforce_platform_admin_mfa
 
 router = APIRouter(prefix="/api/v1/platform")
 
 
-def require_platform_admin(user: User = Depends(get_current_user)) -> User:
+def require_platform_admin(
+    request: Request,
+    user: User = Depends(get_current_user),
+) -> User:
     if (user.issuer, user.subject) not in settings.platform_admin_identities:
         raise ApiError("PLATFORM_ADMIN_REQUIRED", "Platform administrator access required.", 403)
+    enforce_platform_admin_mfa(request)
     return user
 
 

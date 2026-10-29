@@ -21,3 +21,6 @@ packages/api-client/.schema-check.d.ts
 next-env.d.ts
 apps/web/public/brand/_*.png
 apps/web/public/brand/logo-crop-debug.png
+
+.vercel
+.env*
