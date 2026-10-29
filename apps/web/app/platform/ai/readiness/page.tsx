@@ -29,15 +29,21 @@ export default function AiReadinessPage() {
       apiJson<CapReadiness>("/api/v1/platform/ai/readiness/capabilities"),
       apiJson<SecReadiness>("/api/v1/platform/ai/readiness/security"),
     ]);
-    for (const res of [o, c, s]) {
-      if (!res.ok) {
-        setProblem(res.problem);
-        return;
-      }
+    if (!o.ok) {
+      setProblem(o.problem);
+      return;
     }
-    setOverview(o.data as Readiness);
-    setCaps(c.data as CapReadiness);
-    setSecurity(s.data as SecReadiness);
+    if (!c.ok) {
+      setProblem(c.problem);
+      return;
+    }
+    if (!s.ok) {
+      setProblem(s.problem);
+      return;
+    }
+    setOverview(o.data);
+    setCaps(c.data);
+    setSecurity(s.data);
   }, []);
 
   useEffect(() => {

@@ -75,18 +75,36 @@ export default function AiCommandCenterPage() {
       apiJson<Usage>("/api/v1/platform/ai/usage"),
       apiJson<Evaluation[]>("/api/v1/platform/ai/evaluations"),
     ]);
-    for (const res of [o, a, t, s, u, e]) {
-      if (!res.ok) {
-        setProblem(res.problem);
-        return;
-      }
+    if (!o.ok) {
+      setProblem(o.problem);
+      return;
     }
-    setOverview(o.data as Overview);
-    setAgents(a.data as Agent[]);
-    setTools(t.data as Tool[]);
-    setSafety(s.data as SafetyEvent[]);
-    setUsage(u.data as Usage);
-    setEvals(e.data as Evaluation[]);
+    if (!a.ok) {
+      setProblem(a.problem);
+      return;
+    }
+    if (!t.ok) {
+      setProblem(t.problem);
+      return;
+    }
+    if (!s.ok) {
+      setProblem(s.problem);
+      return;
+    }
+    if (!u.ok) {
+      setProblem(u.problem);
+      return;
+    }
+    if (!e.ok) {
+      setProblem(e.problem);
+      return;
+    }
+    setOverview(o.data);
+    setAgents(a.data);
+    setTools(t.data);
+    setSafety(s.data);
+    setUsage(u.data);
+    setEvals(e.data);
   }, []);
 
   useEffect(() => {

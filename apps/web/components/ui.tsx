@@ -247,10 +247,12 @@ export function LoadingState({ label = "Loading", rows = 3 }: { label?: string; 
 
 export function EmptyState({
   title,
+  description,
   children,
   action,
 }: {
   title: string;
+  description?: string;
   children?: ReactNode;
   action?: ReactNode;
 }) {
@@ -259,6 +261,7 @@ export function EmptyState({
       <span className="state-icon" aria-hidden="true">○</span>
       <div>
         <h3>{title}</h3>
+        {description ? <p>{description}</p> : null}
         {children && <p>{children}</p>}
         {action && <div className="state-actions">{action}</div>}
       </div>

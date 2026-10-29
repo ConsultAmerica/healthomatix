@@ -81,7 +81,7 @@ function IdentityWorkspace() {
     setProblem(null);
     if (status === "confirmed" && !patientId.trim()) {
       setProblem({
-        kind: "api",
+        kind: "invalid",
         status: 400,
         code: "PATIENT_REQUIRED",
         message: "Enter the local patient ID before confirming a match.",
